@@ -1,0 +1,12 @@
+.idea
+.gradle
+**/build
+/out
+/target
+.DS_Store
+/src
+build.gradle
+gradlew
+gradlew.bat
+settings.gradle
+gradle/
