@@ -22,7 +22,7 @@ Resources:
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: false
         InviteMessageTemplate:
-          EmailMessage: 'Your username is {username} and temporary password is {####}.'
+          EmailMessage: "You've been invited to Bloom! Your username is {username} and temporary password is {####}."
           EmailSubject: 'Your temporary password'
         UnusedAccountValidityDays: 7
       AccountRecoverySetting:
@@ -38,8 +38,8 @@ Resources:
           RequireUppercase: true
       AutoVerifiedAttributes:
         - email
-      EmailVerificationMessage: 'Here is your verification code: {####}.'
-      EmailVerificationSubject: 'Your verification code'
+      EmailVerificationMessage: 'Welcome to Bloom! Here is your verification code: {####}.'
+      EmailVerificationSubject: 'Your Bloom verification code'
       Schema:
         - Name: email
           AttributeDataType: String
