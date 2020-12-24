@@ -43,9 +43,7 @@ class RequestStreamHandlerTest {
         exceptionHandler = mock(ExceptionHandler.class);
         logger = mock(Logger.class);
 
-        sut =
-                new RequestStreamHandler<>(
-                        mapper, delegate, String.class, String.class, exceptionHandler, logger);
+        sut = new RequestStreamHandler<>(mapper, delegate, String.class, exceptionHandler, logger);
 
         handlerRequest = mock(HandlerRequest.class);
         when(mapper.readValue(input, HandlerRequest.class)).thenReturn(handlerRequest);

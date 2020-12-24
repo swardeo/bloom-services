@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import java.util.HashMap;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -12,14 +11,14 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HandlerRequest {
 
-    private String httpMethod;
-    private String path;
-    private Map<String, String> queryStringParameters;
-    private Map<String, String> pathParameters;
-    private Map<String, String> headers;
-    private String body;
+    private final String httpMethod;
+    private final String path;
+    private final Map<String, String> queryStringParameters;
+    private final Map<String, String> pathParameters;
+    private final Map<String, String> headers;
+    private final String body;
 
-    private HandlerRequest(HandlerRequest.Builder builder) {
+    private HandlerRequest(Builder builder) {
         httpMethod = builder.httpMethod;
         path = builder.path;
         queryStringParameters = builder.queryStringParameters;
@@ -66,11 +65,7 @@ public class HandlerRequest {
         private Map<String, String> headers;
         private String body;
 
-        private Builder() {
-            queryStringParameters = new HashMap<>();
-            pathParameters = new HashMap<>();
-            headers = new HashMap<>();
-        }
+        private Builder() {}
 
         public Builder withHttpMethod(String httpMethod) {
             this.httpMethod = httpMethod;
@@ -82,18 +77,18 @@ public class HandlerRequest {
             return this;
         }
 
-        public Builder withQueryStringParameter(String name, String value) {
-            queryStringParameters.put(name, value);
+        public Builder withQueryStringParameters(Map<String, String> queryStringParameters) {
+            this.queryStringParameters = queryStringParameters;
             return this;
         }
 
-        public Builder withPathParameter(String name, String value) {
-            pathParameters.put(name, value);
+        public Builder withPathParameters(Map<String, String> pathParameters) {
+            this.pathParameters = pathParameters;
             return this;
         }
 
-        public Builder withHeader(String name, String value) {
-            headers.put(name, value);
+        public Builder withHeaders(Map<String, String> headers) {
+            this.headers = headers;
             return this;
         }
 

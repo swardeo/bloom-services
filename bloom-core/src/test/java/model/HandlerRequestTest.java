@@ -5,6 +5,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,9 +55,10 @@ class HandlerRequestTest {
     void builderAcceptsQueryStringParametersWhenInvoked() {
         // given
         HandlerRequest.Builder builder = HandlerRequest.newBuilder();
+        Map<String, String> queryStringParameters = Map.of("blah", "crash");
 
         // when
-        builder.withQueryStringParameter("blah", "crash");
+        builder.withQueryStringParameters(queryStringParameters);
 
         // then
         // no exception
@@ -66,9 +68,10 @@ class HandlerRequestTest {
     void builderAcceptsPathParametersWhenInvoked() {
         // given
         HandlerRequest.Builder builder = HandlerRequest.newBuilder();
+        Map<String, String> pathParameters = Map.of("proxy", "hello/world");
 
         // when
-        builder.withPathParameter("proxy", "hello/world");
+        builder.withPathParameters(pathParameters);
 
         // then
         // no exception
@@ -78,9 +81,10 @@ class HandlerRequestTest {
     void builderAcceptsHeadersWhenInvoked() {
         // given
         HandlerRequest.Builder builder = HandlerRequest.newBuilder();
+        Map<String, String> headers = Map.of("blah", "crash");
 
         // when
-        builder.withHeader("blah", "crash");
+        builder.withHeaders(headers);
 
         // then
         // no exception
@@ -115,9 +119,10 @@ class HandlerRequestTest {
 
         builder.withHttpMethod(httpMethod)
                 .withPath(path)
-                .withQueryStringParameter(queryStringParameterName, queryStringParameterValue)
-                .withPathParameter(pathParameterName, pathParameterValue)
-                .withHeader(headerName, headerValue)
+                .withQueryStringParameters(
+                        Map.of(queryStringParameterName, queryStringParameterValue))
+                .withPathParameters(Map.of(pathParameterName, pathParameterValue))
+                .withHeaders(Map.of(headerName, headerValue))
                 .withBody(body);
 
         // when
@@ -146,6 +151,12 @@ class HandlerRequestTest {
         HandlerRequest request = mapper.readValue(fromJson, HandlerRequest.class);
 
         assertThat(request.getHttpMethod()).isEqualTo(expected.getHttpMethod());
+        assertThat(request.getPath()).isEqualTo(expected.getPath());
+        assertThat(request.getQueryStringParameters())
+                .isEqualTo(expected.getQueryStringParameters());
+        assertThat(request.getPathParameters()).isEqualTo(expected.getPathParameters());
+        assertThat(request.getHeaders()).isEqualTo(expected.getHeaders());
+        assertThat(request.getBody()).isEqualTo(expected.getBody());
     }
 
     static Stream<Arguments> requestProvider() {
@@ -154,23 +165,23 @@ class HandlerRequestTest {
                         ("{\"httpMethod\":\"POST\",\"headers\":{\"Content-Type\":\"application/json\"}}"),
                         HandlerRequest.newBuilder()
                                 .withHttpMethod("POST")
-                                .withHeader("Content-Type", "application/json")
+                                .withHeaders(Map.of("Content-Type", "application/json"))
                                 .build(),
                         ("{\"httpMethod\":\"POST\",\"path\":\"/hello/world\",\"pathParameters\":{\"proxy\":\"/hello/world\"},\"headers\":{\"Content-Type\":\"application/json\"}}"),
                         HandlerRequest.newBuilder()
                                 .withHttpMethod("POST")
-                                .withHeader("Content-Type", "application/json")
+                                .withHeaders(Map.of("Content-Type", "application/json"))
                                 .withPath("/hello/world")
-                                .withPathParameter("proxy", "/hello/world")
+                                .withPathParameters(Map.of("proxy", "/hello/world"))
                                 .build(),
                         ("{\"httpMethod\":\"POST\",\"path\":\"/hello/world\",\"body\":\"hello\",\"headers\":{\"Content-Type\":\"application/json\"},\"pathParameters\":{\"proxy\":\"/hello/world\"},\"queryStringParameters\":{\"name\":\"me\"}}"),
                         HandlerRequest.newBuilder()
                                 .withHttpMethod("POST")
                                 .withPath("/hello/world")
-                                .withPathParameter("proxy", "/hello/world")
+                                .withPathParameters(Map.of("proxy", "/hello/world"))
                                 .withBody("hello")
-                                .withQueryStringParameter("name", "me")
-                                .withHeader("Content-Type", "application/json")
+                                .withQueryStringParameters(Map.of("name", "me"))
+                                .withHeaders(Map.of("Content-Type", "application/json"))
                                 .build()));
     }
 }

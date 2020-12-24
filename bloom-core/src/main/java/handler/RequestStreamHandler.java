@@ -12,23 +12,21 @@ import org.slf4j.LoggerFactory;
 
 public class RequestStreamHandler<TRequest, TResponse>
         implements com.amazonaws.services.lambda.runtime.RequestStreamHandler {
+
     private final ObjectMapper mapper;
     private final Handler<TRequest, TResponse> delegate;
     private final Class<TRequest> requestClazz;
-    private final Class<TResponse> responseClazz;
     private final ExceptionHandler exceptionHandler;
     private final Logger logger;
 
     public RequestStreamHandler(
             ObjectMapper mapper,
             Handler<TRequest, TResponse> delegate,
-            Class<TRequest> requestClazz,
-            Class<TResponse> responseClazz) {
+            Class<TRequest> requestClazz) {
         this(
                 mapper,
                 delegate,
                 requestClazz,
-                responseClazz,
                 new ExceptionHandler(),
                 LoggerFactory.getLogger(RequestStreamHandler.class));
     }
@@ -37,13 +35,11 @@ public class RequestStreamHandler<TRequest, TResponse>
             ObjectMapper mapper,
             Handler<TRequest, TResponse> delegate,
             Class<TRequest> requestClazz,
-            Class<TResponse> responseClazz,
             ExceptionHandler exceptionHandler,
             Logger logger) {
         this.mapper = mapper;
         this.delegate = delegate;
         this.requestClazz = requestClazz;
-        this.responseClazz = responseClazz;
         this.exceptionHandler = exceptionHandler;
         this.logger = logger;
     }

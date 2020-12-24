@@ -16,7 +16,7 @@ public class HandlerResponse {
     private final Map<String, String> headers;
     private final String body;
 
-    private HandlerResponse(HandlerResponse.Builder builder) {
+    private HandlerResponse(Builder builder) {
         statusCode = builder.statusCode;
         headers = builder.headers;
         body = builder.body;
