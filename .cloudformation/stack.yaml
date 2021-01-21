@@ -12,6 +12,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+Conditions:
+  IsProduction: !Equals [!Ref Environment, prod]
+
 Resources:
   UserPool:
     Type: 'AWS::Cognito::UserPool'
@@ -133,3 +136,23 @@ Resources:
       Roles:
         authenticated: !GetAtt CognitoAuthorizedRole.Arn
         unauthenticated: !GetAtt CognitoUnauthorizedRole.Arn
+
+  UserTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub '${Environment}-bloom-db'
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: !If [IsProduction, 10, 3]
+        WriteCapacityUnits: !If [IsProduction, 7, 2]
