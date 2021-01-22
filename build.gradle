@@ -39,7 +39,19 @@ subprojects {
             googleJavaFormat().aosp()
         }
     }
+
+    task buildZip(type: Zip) {
+        from compileJava
+        from processResources
+        into('lib') {
+            from configurations.runtimeClasspath
+        }
+        destinationDirectory.set(file("$rootDir/build/artifacts"))
+    }
+
+    buildZip.dependsOn build
 }
+
 
 allprojects {
     repositories {
