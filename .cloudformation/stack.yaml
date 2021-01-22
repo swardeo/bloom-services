@@ -12,6 +12,9 @@ Parameters:
     Type: String
     NoEcho: true
 
+  LambdaHealthVersion:
+    Type: String
+
 Conditions:
   IsProduction: !Equals [!Ref Environment, prod]
 
@@ -156,3 +159,156 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: !If [IsProduction, 10, 3]
         WriteCapacityUnits: !If [IsProduction, 7, 2]
+
+  LambdaHealth:
+    DependsOn: LambdaHealthRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-health-${LambdaHealthVersion}.zip'
+      Description: Bloom Health Function
+      FunctionName: !Sub '${Environment}-bloom-health'
+      Handler: handler.HealthHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 256
+      Role: !GetAtt LambdaHealthRole.Arn
+      Runtime: java11
+      Timeout: 15
+
+  LambdaHealthRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaHealthInvokePolicy:
+    DependsOn: ['LambdaHealth', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: health-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaHealth.Arn
+
+  LambdaLoggingPolicy:
+    DependsOn: LambdaHealthRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: lambda-logging-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: '*'
+      Roles:
+        - !Ref LambdaHealthRole
+
+  UserTableReadPolicy:
+    DependsOn: ['UserTable', 'LambdaHealthRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: user-table-read-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action:
+            - 'dynamodb:DescribeTable'
+            - 'dynamodb:Scan'
+            - 'dynamodb:Query'
+          Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-bloom-db'
+      Roles:
+        - !Ref LambdaHealthRole
+
+  ApiGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'apigateway.amazonaws.com'
+            Action: 'sts:AssumeRole'
+
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${Environment}-bloom-api'
+
+  ResourceHealth:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'health'
+      RestApiId: !Ref ApiGateway
+
+  MethodHealth:
+    DependsOn: ['ApiGateway', 'ResourceHealth', 'ApiGatewayRole', 'LambdaHealth']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaHealth.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceHealth
+      RestApiId: !Ref ApiGateway
+
+  DeployGateway:
+    DependsOn: ['ApiGateway', 'MethodHealth']
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: !Sub '${Environment}'
+
+  GatewayDomain:
+    DependsOn: ApiGateway
+    Type: 'AWS::ApiGateway::DomainName'
+    Properties:
+      DomainName: !If [IsProduction, 'api.bloom.money', 'dev-api.bloom.money']
+      CertificateArn: !Ref CertificateArn
+      SecurityPolicy: 'TLS_1_2'
+
+  DomainMapping:
+    DependsOn: ['DeployGateway', 'GatewayRecord']
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: ''
+      DomainName: !If [IsProduction, 'api.bloom.money', 'dev-api.bloom.money']
+      RestApiId: !Ref ApiGateway
+      Stage: !Sub '${Environment}'
+
+  GatewayRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !If [IsProduction, 'api.bloom.money', 'dev-api.bloom.money']
+      Type: A
+      HostedZoneName: bloom.money.
+      AliasTarget:
+        DNSName: !GetAtt GatewayDomain.DistributionDomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt GatewayDomain.DistributionHostedZoneId

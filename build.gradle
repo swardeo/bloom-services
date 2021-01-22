@@ -50,8 +50,13 @@ subprojects {
     }
 
     buildZip.dependsOn build
-}
 
+    task printVersion {
+        doLast{
+            println project.version
+        }
+    }
+}
 
 allprojects {
     repositories {

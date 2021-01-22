@@ -50,7 +50,11 @@ public class RequestStreamHandler<TRequest, TResponse>
         HandlerResponse response;
         try {
             HandlerRequest request = mapper.readValue(input, HandlerRequest.class);
-            TRequest req = mapper.readValue(request.getBody(), requestClazz);
+
+            TRequest req = null;
+            if (Void.class != requestClazz) {
+                req = mapper.readValue(request.getBody(), requestClazz);
+            }
             TResponse res = delegate.handle(req, context);
 
             response =
