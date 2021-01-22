@@ -28,10 +28,12 @@ jobs:
           no-fail-on-empty-changeset: '1'
       - name: Upload Artifacts
         run: aws s3 sync build/artifacts s3://bloom-services-artifacts
+      - name: Calculate deployment artifact versions
+        run: echo "LAMBDA_HEALTH_VERSION=$(./gradlew -q :bloom-health:printVersion)" >> $GITHUB_ENV
       - name: Deploy Stack to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: dev-bloom-services
           template: .cloudformation/stack.yaml
-          parameter-overrides: 'Environment=dev,CertificateArn=${{ secrets.CERTIFICATE_ARN }}'
+          parameter-overrides: 'Environment=dev,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }}'
           no-fail-on-empty-changeset: '1'

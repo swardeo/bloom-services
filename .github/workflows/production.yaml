@@ -18,10 +18,12 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
+      - name: Calculate deployment artifact versions
+        run: echo "LAMBDA_HEALTH_VERSION=$(./gradlew -q :bloom-health:printVersion)" >> $GITHUB_ENV
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: prod-bloom-services
           template: .cloudformation/stack.yaml
-          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }}'
+          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }}'
           no-fail-on-empty-changeset: '1'

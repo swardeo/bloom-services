@@ -1,10 +1,11 @@
 package handler;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.HealthResponse;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import provider.DynamoProvider;
 import provider.MapperProvider;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -29,7 +30,7 @@ public class HealthHandler extends RequestStreamHandler<Void, HealthResponse> {
         private final Logger logger;
 
         HealthHandlerDelegate(DynamoDbClient dynamoDbClient, String tableName) {
-            this(dynamoDbClient, tableName, LoggerFactory.getLogger(HealthHandler.class));
+            this(dynamoDbClient, tableName, getLogger(HealthHandler.class));
         }
 
         HealthHandlerDelegate(DynamoDbClient dynamoDbClient, String tableName, Logger logger) {
