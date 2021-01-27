@@ -1,7 +1,10 @@
 package handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import handler.HealthHandler.HealthHandlerDelegate;
@@ -15,7 +18,7 @@ import software.amazon.awssdk.services.dynamodb.model.DescribeTableResponse;
 import software.amazon.awssdk.services.dynamodb.model.TableDescription;
 import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
-class HealthResponseHandlerTest {
+class HealthHandlerTest {
 
     DynamoDbClient mockClient;
     String tableName;

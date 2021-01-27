@@ -1,5 +1,6 @@
 package handler;
 
+import exception.BadRequestException;
 import java.util.HashMap;
 import java.util.Map;
 import model.HandlerResponse;
@@ -31,6 +32,7 @@ public class ExceptionHandler {
     }
 
     private void populateExceptionResponseMap() {
+        exceptionResponseMap.put(BadRequestException.class, 400);
         exceptionResponseMap.put(RuntimeException.class, 500);
     }
 

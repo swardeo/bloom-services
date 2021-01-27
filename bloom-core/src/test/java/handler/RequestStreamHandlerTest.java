@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -181,6 +182,24 @@ class RequestStreamHandlerTest {
         } catch (RuntimeException e) {
             verify(exceptionHandler, times(1)).handleException(expected);
             assertThat(e).hasMessage(message);
+        }
+    }
+
+    @Test
+    void throwsExceptionWhenBadRequestBody() throws IOException {
+        // given
+        RuntimeException cause = new IllegalArgumentException("illegal request");
+        when(mapper.readValue(input, HandlerRequest.class)).thenThrow(cause);
+
+        try {
+            // when
+            sut.handleRequest(input, output, context);
+
+            // then
+        } catch (BadRequestException actual) {
+            assertThat(actual)
+                    .hasMessage("request body contained illegal values")
+                    .hasCauseReference(cause);
         }
     }
 

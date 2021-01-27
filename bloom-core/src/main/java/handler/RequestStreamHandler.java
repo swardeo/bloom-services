@@ -2,6 +2,7 @@ package handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,8 +53,12 @@ public class RequestStreamHandler<TRequest, TResponse>
             HandlerRequest request = mapper.readValue(input, HandlerRequest.class);
 
             TRequest req = null;
-            if (Void.class != requestClazz) {
-                req = mapper.readValue(request.getBody(), requestClazz);
+            try {
+                if (Void.class != requestClazz) {
+                    req = mapper.readValue(request.getBody(), requestClazz);
+                }
+            } catch (IllegalArgumentException exception) {
+                throw new BadRequestException("request body contained illegal values", exception);
             }
             TResponse res = delegate.handle(req, context);
 
