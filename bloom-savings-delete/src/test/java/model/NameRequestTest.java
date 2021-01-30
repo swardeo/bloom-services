@@ -1,4 +1,4 @@
-package model.request;
+package model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.shouldHaveThrown;
@@ -7,7 +7,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
-import model.Name;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

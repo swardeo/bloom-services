@@ -26,15 +26,9 @@ public class SavingTransformer {
         savingItem.put("StartDate", builder().s(saving.getStartDate().toString()).build());
         savingItem.put("EndDate", builder().s(saving.getEndDate().toString()).build());
         savingItem.put("YearlyRate", builder().s(saving.getYearlyRate().toString()).build());
-
-        if (null != saving.getAdjustments()) {
-            savingItem.put("Adjustments", createAdjustmentsAttribute(saving.getAdjustments()));
-        }
-
-        if (null != saving.getOneTimePayments()) {
-            savingItem.put(
-                    "OneTimePayments", createOneTimePaymentsAttribute(saving.getOneTimePayments()));
-        }
+        savingItem.put("Adjustments", createAdjustmentsAttribute(saving.getAdjustments()));
+        savingItem.put(
+                "OneTimePayments", createOneTimePaymentsAttribute(saving.getOneTimePayments()));
 
         return savingItem;
     }

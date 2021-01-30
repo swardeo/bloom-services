@@ -8,7 +8,7 @@ import static provider.MapperProvider.provideMapper;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
-import model.request.NameRequest;
+import model.NameRequest;
 import org.slf4j.Logger;
 import service.DeleteSavingService;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;

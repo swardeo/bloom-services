@@ -73,8 +73,8 @@ class SavingTransformerTest {
         assertThat(actual.get("StartDate").s()).isEqualTo(savingStartDate.toString());
         assertThat(actual.get("EndDate").s()).isEqualTo(savingEndDate.toString());
         assertThat(actual.get("YearlyRate").s()).isEqualTo(savingYearlyRate.toString());
-        assertThat(actual).doesNotContainKey("Adjustments");
-        assertThat(actual).doesNotContainKey("OneTimePayments");
+        assertThat(actual.get("Adjustments").l()).isEmpty();
+        assertThat(actual.get("OneTimePayments").l()).isEmpty();
     }
 
     @Test

@@ -5,7 +5,7 @@ import static software.amazon.awssdk.services.dynamodb.model.AttributeValue.buil
 import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.HashMap;
 import java.util.Map;
-import model.request.NameRequest;
+import model.NameRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class NameRequestTransformer {
