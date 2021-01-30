@@ -1,4 +1,4 @@
-package model.request;
+package model;
 
 import static util.StringValidator.checkNullOrEmpty;
 

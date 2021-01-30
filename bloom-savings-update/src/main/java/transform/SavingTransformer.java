@@ -43,17 +43,14 @@ public class SavingTransformer {
 
     private static AttributeValue createAdjustmentsAttribute(List<Adjustment> adjustments) {
         List<AttributeValue> attributeList = new ArrayList<>();
-        if (null != adjustments) {
-            for (Adjustment adjustment : adjustments) {
-                Map<String, AttributeValue> attribute =
-                        Map.of(
-                                "Amount", builder().s(adjustment.getAmount().toString()).build(),
-                                "DateFrom",
-                                        builder().s(adjustment.getDateFrom().toString()).build(),
-                                "Rate", builder().s(adjustment.getRate().toString()).build());
+        for (Adjustment adjustment : adjustments) {
+            Map<String, AttributeValue> attribute =
+                    Map.of(
+                            "Amount", builder().s(adjustment.getAmount().toString()).build(),
+                            "DateFrom", builder().s(adjustment.getDateFrom().toString()).build(),
+                            "Rate", builder().s(adjustment.getRate().toString()).build());
 
-                attributeList.add(builder().m(attribute).build());
-            }
+            attributeList.add(builder().m(attribute).build());
         }
         return builder().l(attributeList).build();
     }
@@ -61,15 +58,12 @@ public class SavingTransformer {
     private static AttributeValue createOneTimePaymentsAttribute(
             List<OneTimePayment> oneTimePayments) {
         List<AttributeValue> attributeList = new ArrayList<>();
-        if (null != oneTimePayments) {
-            for (OneTimePayment oneTimePayment : oneTimePayments) {
-                Map<String, AttributeValue> attribute =
-                        Map.of(
-                                "Amount",
-                                        builder().s(oneTimePayment.getAmount().toString()).build(),
-                                "Date", builder().s(oneTimePayment.getDate().toString()).build());
-                attributeList.add(builder().m(attribute).build());
-            }
+        for (OneTimePayment oneTimePayment : oneTimePayments) {
+            Map<String, AttributeValue> attribute =
+                    Map.of(
+                            "Amount", builder().s(oneTimePayment.getAmount().toString()).build(),
+                            "Date", builder().s(oneTimePayment.getDate().toString()).build());
+            attributeList.add(builder().m(attribute).build());
         }
         return builder().l(attributeList).build();
     }

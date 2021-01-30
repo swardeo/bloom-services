@@ -100,7 +100,7 @@ class UpdateSavingHandlerTest {
     }
 
     @Test
-    void logsWhenSavingAdded() {
+    void logsWhenSavingUpdated() {
         // given
         Logger mockLogger = mock(Logger.class);
         UpdateSavingHandlerDelegate sut =

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import exception.InvalidDateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -179,6 +178,44 @@ class SavingTest {
         assertThat(actual.getYearlyRate()).isEqualTo(yearlyRate);
         assertThat(actual.getAdjustments()).isEqualTo(adjustments);
         assertThat(actual.getOneTimePayments()).isEqualTo(oneTimePayments);
+    }
+
+    @Test
+    void adjustmentsIsAListWhenNotAddedToBuilder() {
+        // given
+        Builder builder =
+                Saving.newBuilder()
+                        .withName(name)
+                        .withStartAmount(startAmount)
+                        .withMonthlyAmount(monthlyAmount)
+                        .withStartDate(startDate)
+                        .withEndDate(endDate)
+                        .withYearlyRate(yearlyRate);
+
+        // when
+        Saving actual = builder.build();
+
+        // then
+        assertThat(actual.getAdjustments()).hasSize(0);
+    }
+
+    @Test
+    void oneTimePaymentsIsAListWhenNotAddedToBuilder() {
+        // given
+        Builder builder =
+                Saving.newBuilder()
+                        .withName(name)
+                        .withStartAmount(startAmount)
+                        .withMonthlyAmount(monthlyAmount)
+                        .withStartDate(startDate)
+                        .withEndDate(endDate)
+                        .withYearlyRate(yearlyRate);
+
+        // when
+        Saving actual = builder.build();
+
+        // then
+        assertThat(actual.getOneTimePayments()).hasSize(0);
     }
 
     @ParameterizedTest
@@ -352,9 +389,9 @@ class SavingTest {
         try {
             // when
             builder.build();
-            shouldHaveThrown(InvalidDateException.class);
+            shouldHaveThrown(IllegalArgumentException.class);
 
-        } catch (InvalidDateException actual) {
+        } catch (IllegalArgumentException actual) {
             // then
             assertThat(actual).hasMessage("endDate cannot be before startDate");
         }
@@ -380,9 +417,9 @@ class SavingTest {
         try {
             // when
             builder.build();
-            shouldHaveThrown(InvalidDateException.class);
+            shouldHaveThrown(IllegalArgumentException.class);
 
-        } catch (InvalidDateException actual) {
+        } catch (IllegalArgumentException actual) {
             // then
             assertThat(actual)
                     .hasMessage("adjustment date should be in range (startDate, endDate)");
@@ -425,9 +462,9 @@ class SavingTest {
         try {
             // when
             builder.build();
-            shouldHaveThrown(InvalidDateException.class);
+            shouldHaveThrown(IllegalArgumentException.class);
 
-        } catch (InvalidDateException actual) {
+        } catch (IllegalArgumentException actual) {
             // then
             assertThat(actual)
                     .hasMessage("oneTimePayment date should be in range (startDate, endDate)");
@@ -524,7 +561,7 @@ class SavingTest {
     static Stream<Arguments> savingRequestProvider() {
         return Stream.of(
                 arguments(
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\"}",
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[],\"oneTimePayments\":[]}",
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))
                                 .withStartAmount(new Amount("192.77"))
@@ -534,7 +571,7 @@ class SavingTest {
                                 .withYearlyRate(new Rate("1.50"))
                                 .build()),
                 arguments(
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[{\"amount\":\"20.00\",\"dateFrom\":\"2016-01\",\"rate\":\"1.75\"}]}",
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[{\"amount\":\"20.00\",\"dateFrom\":\"2016-01\",\"rate\":\"1.75\"}],\"oneTimePayments\":[]}",
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))
                                 .withStartAmount(new Amount("192.77"))
@@ -550,7 +587,7 @@ class SavingTest {
                                                         new Rate("1.75"))))
                                 .build()),
                 arguments(
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"oneTimePayments\":[{\"amount\":\"25.00\",\"date\":\"2017-03\"}]}",
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[],\"oneTimePayments\":[{\"amount\":\"25.00\",\"date\":\"2017-03\"}]}",
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))
                                 .withStartAmount(new Amount("192.77"))
@@ -625,7 +662,7 @@ class SavingTest {
                                 .withStartDate(new Date("2013-05"))
                                 .withEndDate(new Date("2020-11"))
                                 .withYearlyRate(new Rate("1.50")),
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\"}"),
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[],\"oneTimePayments\":[]}"),
                 arguments(
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))
@@ -640,7 +677,7 @@ class SavingTest {
                                                         new Amount("20.00"),
                                                         new Date("2016-01"),
                                                         new Rate("1.75")))),
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[{\"amount\":\"20.00\",\"dateFrom\":\"2016-01\",\"rate\":\"1.75\"}]}"),
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[{\"amount\":\"20.00\",\"dateFrom\":\"2016-01\",\"rate\":\"1.75\"}],\"oneTimePayments\":[]}"),
                 arguments(
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))
@@ -653,7 +690,7 @@ class SavingTest {
                                         List.of(
                                                 new OneTimePayment(
                                                         new Amount("25.00"), new Date("2017-03")))),
-                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"oneTimePayments\":[{\"amount\":\"25.00\",\"date\":\"2017-03\"}]}"),
+                        "{\"name\":\"savingName\",\"startAmount\":\"192.77\",\"monthlyAmount\":\"15.00\",\"startDate\":\"2013-05\",\"endDate\":\"2020-11\",\"yearlyRate\":\"1.50\",\"adjustments\":[],\"oneTimePayments\":[{\"amount\":\"25.00\",\"date\":\"2017-03\"}]}"),
                 arguments(
                         Saving.newBuilder()
                                 .withName(new Name("savingName"))

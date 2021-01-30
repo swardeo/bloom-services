@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.Map;
-import model.request.NameRequest;
+import model.NameRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;

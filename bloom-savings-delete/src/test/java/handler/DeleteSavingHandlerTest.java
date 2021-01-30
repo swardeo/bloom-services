@@ -9,7 +9,7 @@ import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import com.amazonaws.services.lambda.runtime.Context;
 import handler.DeleteSavingHandler.DeleteSavingHandlerDelegate;
 import java.util.Map;
-import model.request.NameRequest;
+import model.NameRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

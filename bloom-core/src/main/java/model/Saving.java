@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import exception.InvalidDateException;
 import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -36,9 +35,9 @@ public class Saving {
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
         this.yearlyRate = builder.yearlyRate;
-        this.adjustments = null != builder.adjustments ? copyOf(builder.adjustments) : null;
+        this.adjustments = null != builder.adjustments ? copyOf(builder.adjustments) : List.of();
         this.oneTimePayments =
-                null != builder.oneTimePayments ? copyOf(builder.oneTimePayments) : null;
+                null != builder.oneTimePayments ? copyOf(builder.oneTimePayments) : List.of();
     }
 
     private static void validateSaving(Builder builder) {
@@ -53,7 +52,7 @@ public class Saving {
             throw new IllegalArgumentException("startAmount cannot be negative");
         }
         if (builder.endDate.getDate().isBefore(builder.startDate.getDate())) {
-            throw new InvalidDateException("endDate cannot be before startDate");
+            throw new IllegalArgumentException("endDate cannot be before startDate");
         }
         if (null != builder.adjustments && 0 < builder.adjustments.size()) {
             validateAdjustmentDates(
@@ -78,7 +77,7 @@ public class Saving {
 
         if (1 > firstAdjustmentDate.compareTo(startDate)
                 || 1 > endDate.compareTo(lastAdjustmentDate)) {
-            throw new InvalidDateException(
+            throw new IllegalArgumentException(
                     "adjustment date should be in range (startDate, endDate)");
         }
     }
@@ -94,7 +93,7 @@ public class Saving {
 
         if (1 > firstOneTimePaymentDate.compareTo(startDate)
                 || 1 > endDate.compareTo(lastOneTimePaymentDate)) {
-            throw new InvalidDateException(
+            throw new IllegalArgumentException(
                     "oneTimePayment date should be in range (startDate, endDate)");
         }
     }
