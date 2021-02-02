@@ -2,9 +2,9 @@ package handler;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.HealthResponse;
+import model.Subject;
 import org.slf4j.Logger;
 import provider.DynamoProvider;
 import provider.MapperProvider;
@@ -40,7 +40,7 @@ public class HealthHandler extends RequestStreamHandler<Void, HealthResponse> {
         }
 
         @Override
-        public HealthResponse handle(Void request, Context context) {
+        public HealthResponse handle(Void request, Subject subject) {
             DescribeTableResponse response =
                     dynamoDbClient.describeTable(
                             DescribeTableRequest.builder().tableName(tableName).build());

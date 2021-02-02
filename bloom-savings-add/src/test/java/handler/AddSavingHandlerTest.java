@@ -5,12 +5,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
-import com.amazonaws.services.lambda.runtime.Context;
 import handler.AddSavingHandler.AddSavingHandlerDelegate;
 import java.util.Map;
 import model.Name;
 import model.Saving;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -19,27 +18,23 @@ import transform.SavingTransformer;
 
 class AddSavingHandlerTest {
 
-    Context mockContext;
     SavingTransformer mockTransformer;
     AddSavingService mockService;
     Saving mockSaving;
     Map mockAttributeMap;
-    CognitoIdentity mockIdentity;
+    Subject mockSubject;
 
     @BeforeEach
     void beforeEach() {
-        mockContext = mock(Context.class);
         mockTransformer = mock(SavingTransformer.class);
         mockService = mock(AddSavingService.class);
         mockSaving = mock(Saving.class);
         mockAttributeMap = mock(Map.class);
-        mockIdentity = mock(CognitoIdentity.class);
+        mockSubject = mock(Subject.class);
 
-        when(mockContext.getIdentity()).thenReturn(mockIdentity);
-        when(mockTransformer.toAttributeMap(mockSaving, mockContext.getIdentity()))
-                .thenReturn(mockAttributeMap);
+        when(mockTransformer.toAttributeMap(mockSaving, mockSubject)).thenReturn(mockAttributeMap);
 
-        when(mockIdentity.getIdentityId()).thenReturn("blah");
+        when(mockSubject.getSubject()).thenReturn("blah");
 
         Name mockName = mock(Name.class);
         when(mockSaving.getName()).thenReturn(mockName);
@@ -63,10 +58,10 @@ class AddSavingHandlerTest {
         AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockContext);
+        sut.handle(mockSaving, mockSubject);
 
         // then
-        verify(mockTransformer, times(1)).toAttributeMap(mockSaving, mockContext.getIdentity());
+        verify(mockTransformer, times(1)).toAttributeMap(mockSaving, mockSubject);
     }
 
     @Test
@@ -75,7 +70,7 @@ class AddSavingHandlerTest {
         AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockContext);
+        sut.handle(mockSaving, mockSubject);
 
         // then
         verify(mockService, times(1)).addSaving(mockAttributeMap);
@@ -89,13 +84,13 @@ class AddSavingHandlerTest {
                 new AddSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(mockSaving, mockContext);
+        sut.handle(mockSaving, mockSubject);
 
         // then
         verify(mockLogger, times(1))
                 .info(
-                        "Saving {} added for identity {}",
+                        "Saving {} added for subject {}",
                         mockSaving.getName().getName(),
-                        mockContext.getIdentity().getIdentityId());
+                        mockSubject.getSubject());
     }
 }

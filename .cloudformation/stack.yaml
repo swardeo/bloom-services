@@ -15,6 +15,18 @@ Parameters:
   LambdaHealthVersion:
     Type: String
 
+  LambdaSavingsAddVersion:
+    Type: String
+
+  LambdaSavingsDeleteVersion:
+    Type: String
+
+  LambdaSavingsListVersion:
+    Type: String
+
+  LambdaSavingsUpdateVersion:
+    Type: String
+
 Conditions:
   IsProduction: !Equals [!Ref Environment, prod]
 
@@ -177,6 +189,9 @@ Resources:
       Role: !GetAtt LambdaHealthRole.Arn
       Runtime: java11
       Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaHealthVersion
 
   LambdaHealthRole:
     Type: AWS::IAM::Role
@@ -205,8 +220,200 @@ Resources:
           Action: 'lambda:InvokeFunction'
           Resource: !GetAtt LambdaHealth.Arn
 
+  LambdaSavingsAdd:
+    DependsOn: LambdaSavingsAddRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-savings-add-${LambdaSavingsAddVersion}.zip'
+      Description: Bloom Savings Add Function
+      FunctionName: !Sub '${Environment}-bloom-savings-add'
+      Handler: handler.AddSavingHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaSavingsAddRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaSavingsAddVersion
+
+  LambdaSavingsAddRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaSavingsAddInvokePolicy:
+    DependsOn: ['LambdaSavingsAdd', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: savings-add-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaSavingsAdd.Arn
+
+  LambdaSavingsDelete:
+    DependsOn: LambdaSavingsDeleteRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-savings-delete-${LambdaSavingsDeleteVersion}.zip'
+      Description: Bloom Savings Delete Function
+      FunctionName: !Sub '${Environment}-bloom-savings-delete'
+      Handler: handler.DeleteSavingHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaSavingsDeleteRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaSavingsDeleteVersion
+
+  LambdaSavingsDeleteRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaSavingsDeleteInvokePolicy:
+    DependsOn: ['LambdaSavingsDelete', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: savings-delete-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaSavingsDelete.Arn
+
+  LambdaSavingsList:
+    DependsOn: LambdaSavingsListRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-savings-list-${LambdaSavingsListVersion}.zip'
+      Description: Bloom Savings List Function
+      FunctionName: !Sub '${Environment}-bloom-savings-list'
+      Handler: handler.ListSavingsHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaSavingsListRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaSavingsListVersion
+
+  LambdaSavingsListRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaSavingsListInvokePolicy:
+    DependsOn: ['LambdaSavingsList', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: savings-list-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaSavingsList.Arn
+
+  LambdaSavingsUpdate:
+    DependsOn: LambdaSavingsUpdateRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-savings-update-${LambdaSavingsUpdateVersion}.zip'
+      Description: Bloom Savings Update Function
+      FunctionName: !Sub '${Environment}-bloom-savings-update'
+      Handler: handler.UpdateSavingHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaSavingsUpdateRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaSavingsUpdateVersion
+
+  LambdaSavingsUpdateRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaSavingsUpdateInvokePolicy:
+    DependsOn: ['LambdaSavingsUpdate', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: savings-update-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaSavingsUpdate.Arn
+
   LambdaLoggingPolicy:
-    DependsOn: LambdaHealthRole
+    DependsOn: ['LambdaHealthRole', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsListRole', 'LambdaSavingsUpdateRole']
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: lambda-logging-policy
@@ -221,9 +428,13 @@ Resources:
             Resource: '*'
       Roles:
         - !Ref LambdaHealthRole
+        - !Ref LambdaSavingsAddRole
+        - !Ref LambdaSavingsDeleteRole
+        - !Ref LambdaSavingsListRole
+        - !Ref LambdaSavingsUpdateRole
 
   UserTableReadPolicy:
-    DependsOn: ['UserTable', 'LambdaHealthRole']
+    DependsOn: ['UserTable', 'LambdaHealthRole', 'LambdaSavingsListRole']
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: user-table-read-policy
@@ -233,11 +444,33 @@ Resources:
           Effect: 'Allow'
           Action:
             - 'dynamodb:DescribeTable'
-            - 'dynamodb:Scan'
+            - 'dynamodb:GetItem'
             - 'dynamodb:Query'
+            - 'dynamodb:Scan'
           Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-bloom-db'
       Roles:
         - !Ref LambdaHealthRole
+        - !Ref LambdaSavingsListRole
+
+  UserTableWritePolicy:
+    DependsOn: ['UserTable', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsUpdateRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: user-table-write-policy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action:
+            - 'dynamodb:GetItem'
+            - 'dynamodb:PutItem'
+            - 'dynamodb:UpdateItem'
+            - 'dynamodb:DeleteItem'
+          Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${Environment}-bloom-db'
+      Roles:
+        - !Ref LambdaSavingsAddRole
+        - !Ref LambdaSavingsDeleteRole
+        - !Ref LambdaSavingsUpdateRole
 
   ApiGatewayRole:
     Type: AWS::IAM::Role
@@ -255,6 +488,17 @@ Resources:
     Properties:
       Name: !Sub '${Environment}-bloom-api'
 
+  Authorizer:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: !Sub '${Environment}-bloom-authorizer'
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+      ProviderARNs:
+        - !GetAtt UserPool.Arn
+      RestApiId: !Ref ApiGateway
+
   ResourceHealth:
     DependsOn: ApiGateway
     Type: AWS::ApiGateway::Resource
@@ -263,8 +507,25 @@ Resources:
       PathPart: 'health'
       RestApiId: !Ref ApiGateway
 
+  ResourceSavings:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'savings'
+      RestApiId: !Ref ApiGateway
+
+  ResourceSavingsName:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ResourceSavings
+      PathPart: '{name}'
+      RestApiId: !Ref ApiGateway
+
   MethodHealth:
-    DependsOn: ['ApiGateway', 'ResourceHealth', 'ApiGatewayRole', 'LambdaHealth']
+    DependsOn:
+      ['ApiGateway', 'ResourceHealth', 'ApiGatewayRole', 'LambdaHealth']
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
@@ -278,8 +539,106 @@ Resources:
       ResourceId: !Ref ResourceHealth
       RestApiId: !Ref ApiGateway
 
+  MethodSavingsOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+      ResourceId: !Ref ResourceSavings
+      RestApiId: !Ref ApiGateway
+
+  MethodSavingsAdd:
+    DependsOn:
+      ['ApiGateway', 'ResourceSavings', 'ApiGatewayRole', 'LambdaSavingsAdd']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaSavingsAdd.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceSavings
+      RestApiId: !Ref ApiGateway
+
+  MethodSavingsDelete:
+    DependsOn:
+      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsDelete']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: DELETE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaSavingsDelete.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceSavingsName
+      RestApiId: !Ref ApiGateway
+
+  MethodSavingsList:
+    DependsOn:
+      ['ApiGateway', 'ResourceSavings', 'ApiGatewayRole', 'LambdaSavingsList']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaSavingsList.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceSavings
+      RestApiId: !Ref ApiGateway
+
+  MethodSavingsUpdate:
+    DependsOn:
+      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsUpdate']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaSavingsUpdate.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceSavingsName
+      RestApiId: !Ref ApiGateway
+
   DeployGateway:
-    DependsOn: ['ApiGateway', 'MethodHealth']
+    DependsOn:
+      ['ApiGateway', 'MethodHealth', 'MethodSavingsAdd', 'MethodSavingsOptions', 'MethodSavingsDelete', 'MethodSavingsList', 'MethodSavingsUpdate']
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref ApiGateway

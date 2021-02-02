@@ -19,11 +19,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
       - name: Calculate deployment artifact versions
-        run: echo "LAMBDA_HEALTH_VERSION=$(./gradlew -q :bloom-health:printVersion)" >> $GITHUB_ENV
+        run: |
+          echo "LAMBDA_HEALTH_VERSION=$(./gradlew -q :bloom-health:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_SAVINGS_ADD_VERSION=$(./gradlew -q :bloom-savings-add:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_SAVINGS_DELETE_VERSION=$(./gradlew -q :bloom-savings-delete:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_SAVINGS_LIST_VERSION=$(./gradlew -q :bloom-savings-list:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_SAVINGS_UPDATE_VERSION=$(./gradlew -q :bloom-savings-update:printVersion)" >> $GITHUB_ENV
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: prod-bloom-services
           template: .cloudformation/stack.yaml
-          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }}'
+          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }},LambdaSavingsAddVersion=${{ env.LAMBDA_SAVINGS_ADD_VERSION }},LambdaSavingsDeleteVersion=${{ env.LAMBDA_SAVINGS_DELETE_VERSION }},LambdaSavingsListVersion=${{ env.LAMBDA_SAVINGS_LIST_VERSION }},LambdaSavingsUpdateVersion=${{ env.LAMBDA_SAVINGS_UPDATE_VERSION }}'
           no-fail-on-empty-changeset: '1'
+      - name: Deploy API Gateway
+        run: aws apigateway create-deployment --rest-api-id 81htbu27v1 --stage-name prod

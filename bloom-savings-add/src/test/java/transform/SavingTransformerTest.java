@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.List;
 import java.util.Map;
 import model.Adjustment;
@@ -15,6 +14,7 @@ import model.Name;
 import model.OneTimePayment;
 import model.Rate;
 import model.Saving;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -23,7 +23,7 @@ class SavingTransformerTest {
 
     SavingTransformer sut;
 
-    CognitoIdentity mockCognitoIdentity;
+    Subject mockSubject;
     Saving.Builder savingBuilder;
     Name savingName;
     Amount savingStartAmount;
@@ -34,7 +34,7 @@ class SavingTransformerTest {
 
     @BeforeEach
     void beforeEach() {
-        mockCognitoIdentity = mock(CognitoIdentity.class);
+        mockSubject = mock(Subject.class);
 
         savingName = new Name("MySaving");
         savingStartAmount = new Amount("206.78");
@@ -52,7 +52,7 @@ class SavingTransformerTest {
                         .withEndDate(savingEndDate)
                         .withYearlyRate(savingYearlyRate);
 
-        when(mockCognitoIdentity.getIdentityId()).thenReturn("eu-west-2:74sr7f7-j234fd-4385ds");
+        when(mockSubject.getSubject()).thenReturn("74sr7f7-j234fd-4385ds");
 
         sut = new SavingTransformer();
     }
@@ -63,10 +63,10 @@ class SavingTransformerTest {
         Saving saving = savingBuilder.build();
 
         // when
-        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockCognitoIdentity);
+        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockSubject);
 
         // then
-        assertThat(actual.get("PK").s()).isEqualTo("USER#" + mockCognitoIdentity.getIdentityId());
+        assertThat(actual.get("PK").s()).isEqualTo("USER#" + mockSubject.getSubject());
         assertThat(actual.get("SK").s()).isEqualTo("SAVING#" + savingName.getName());
         assertThat(actual.get("StartAmount").s()).isEqualTo(savingStartAmount.toString());
         assertThat(actual.get("MonthlyAmount").s()).isEqualTo(savingMonthlyAmount.toString());
@@ -104,7 +104,7 @@ class SavingTransformerTest {
                         "Rate",
                         AttributeValue.builder().s(adjustment2.getRate().toString()).build());
         // when
-        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockCognitoIdentity);
+        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockSubject);
 
         // then
         List<AttributeValue> adjustments = actual.get("Adjustments").l();
@@ -140,7 +140,7 @@ class SavingTransformerTest {
                         "Date",
                         AttributeValue.builder().s(oneTimePayment2.getDate().toString()).build());
         // when
-        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockCognitoIdentity);
+        Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockSubject);
 
         // then
         List<AttributeValue> oneTimePayments = actual.get("OneTimePayments").l();

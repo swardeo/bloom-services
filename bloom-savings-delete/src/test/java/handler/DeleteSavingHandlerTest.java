@@ -6,10 +6,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.CognitoIdentity;
-import com.amazonaws.services.lambda.runtime.Context;
 import handler.DeleteSavingHandler.DeleteSavingHandlerDelegate;
 import java.util.Map;
 import model.NameRequest;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import transform.NameRequestTransformer;
 
 class DeleteSavingHandlerTest {
 
-    Context mockContext;
+    Subject mockSubject;
     NameRequestTransformer mockTransformer;
     DeleteSavingService mockService;
     NameRequest mockNameRequest;
@@ -27,19 +27,16 @@ class DeleteSavingHandlerTest {
 
     @BeforeEach
     void beforeEach() {
-        mockContext = mock(Context.class);
+        mockSubject = mock(Subject.class);
         mockTransformer = mock(NameRequestTransformer.class);
         mockService = mock(DeleteSavingService.class);
         mockNameRequest = mock(NameRequest.class);
-        mockIdentity = mock(CognitoIdentity.class);
         mockKey = mock(Map.class);
 
         when(mockNameRequest.getName()).thenReturn("hello");
+        when(mockSubject.getSubject()).thenReturn("jsdfds-32423-dsf");
 
-        when(mockContext.getIdentity()).thenReturn(mockIdentity);
-        when(mockIdentity.getIdentityId()).thenReturn("eu-west-2:jsdfds-32423-dsf");
-
-        when(mockTransformer.toKey(mockNameRequest, mockContext.getIdentity())).thenReturn(mockKey);
+        when(mockTransformer.toKey(mockNameRequest, mockSubject)).thenReturn(mockKey);
     }
 
     @Test
@@ -59,10 +56,10 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockNameRequest, mockContext);
+        sut.handle(mockNameRequest, mockSubject);
 
         // then
-        verify(mockTransformer, times(1)).toKey(mockNameRequest, mockContext.getIdentity());
+        verify(mockTransformer, times(1)).toKey(mockNameRequest, mockSubject);
     }
 
     @Test
@@ -72,7 +69,7 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockNameRequest, mockContext);
+        sut.handle(mockNameRequest, mockSubject);
 
         // then
         verify(mockService, times(1)).deleteSaving(mockKey);
@@ -86,13 +83,13 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(mockNameRequest, mockContext);
+        sut.handle(mockNameRequest, mockSubject);
 
         // then
         verify(mockLogger, times(1))
                 .info(
-                        "Saving {} deleted for identity {}",
+                        "Saving {} deleted for subject {}",
                         mockNameRequest.getName(),
-                        mockContext.getIdentity().getIdentityId());
+                        mockSubject.getSubject());
     }
 }
