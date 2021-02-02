@@ -20,6 +20,8 @@ public class HandlerResponse {
         body = builder.body;
 
         headers.put("Content-Type", "application/json");
+        headers.put("Access-Control-Allow-Origin", "*");
+        headers.put("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
     }
 
     public int getStatusCode() {

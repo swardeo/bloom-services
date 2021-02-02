@@ -7,8 +7,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.Map;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,15 +23,15 @@ class ListSavingsServiceTest {
 
     DynamoDbClient mockClient;
     String tableName;
-    CognitoIdentity mockCognitoIdentity;
+    Subject mockSubject;
 
     @BeforeEach
     void beforeEach() {
         mockClient = mock(DynamoDbClient.class);
         tableName = "MY_TABLE_NAME";
 
-        mockCognitoIdentity = mock(CognitoIdentity.class);
-        when(mockCognitoIdentity.getIdentityId()).thenReturn("eu-west-2:74sr7f7-j234fd-4385ds");
+        mockSubject = mock(Subject.class);
+        when(mockSubject.getSubject()).thenReturn("74sr7f7-j234fd-4385ds");
 
         sut = new ListSavingsService(mockClient, tableName);
     }
@@ -41,7 +41,7 @@ class ListSavingsServiceTest {
         // given
 
         // when
-        sut.listSavings(mockCognitoIdentity);
+        sut.listSavings(mockSubject);
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
@@ -57,7 +57,7 @@ class ListSavingsServiceTest {
         String keyConditionExpression = "PK = :user AND begins_with ( SK, :saving )";
 
         // when
-        sut.listSavings(mockCognitoIdentity);
+        sut.listSavings(mockSubject);
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
@@ -74,12 +74,12 @@ class ListSavingsServiceTest {
                 Map.of(
                         ":user",
                                 AttributeValue.builder()
-                                        .s("USER#" + mockCognitoIdentity.getIdentityId())
+                                        .s("USER#" + mockSubject.getSubject())
                                         .build(),
                         ":saving", AttributeValue.builder().s("SAVING#").build());
 
         // when
-        sut.listSavings(mockCognitoIdentity);
+        sut.listSavings(mockSubject);
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
@@ -96,7 +96,7 @@ class ListSavingsServiceTest {
         when(mockClient.query(any(QueryRequest.class))).thenReturn(expectedResponse);
 
         // when
-        QueryResponse actual = sut.listSavings(mockCognitoIdentity);
+        QueryResponse actual = sut.listSavings(mockSubject);
 
         // then
         assertThat(actual).isEqualTo(expectedResponse);

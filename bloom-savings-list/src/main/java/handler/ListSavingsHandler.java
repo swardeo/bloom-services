@@ -5,10 +5,10 @@ import static provider.DynamoProvider.provideClient;
 import static provider.DynamoProvider.provideTableName;
 import static provider.MapperProvider.provideMapper;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import model.Saving;
+import model.Subject;
 import org.slf4j.Logger;
 import service.ListSavingsService;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -49,14 +49,11 @@ public class ListSavingsHandler extends RequestStreamHandler<Void, List<Saving>>
         }
 
         @Override
-        public List<Saving> handle(Void request, Context context) {
-            QueryResponse queryResponse = service.listSavings(context.getIdentity());
+        public List<Saving> handle(Void request, Subject subject) {
+            QueryResponse queryResponse = service.listSavings(subject);
             List<Saving> savings = transformer.toSavingsList(queryResponse);
 
-            logger.info(
-                    "{} savings listed for identity {}",
-                    savings.size(),
-                    context.getIdentity().getIdentityId());
+            logger.info("{} savings listed for subject {}", savings.size(), subject.getSubject());
             return savings;
         }
     }

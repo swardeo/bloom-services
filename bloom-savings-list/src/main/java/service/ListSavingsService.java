@@ -1,7 +1,7 @@
 package service;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.Map;
+import model.Subject;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
@@ -17,15 +17,12 @@ public class ListSavingsService {
         this.tableName = tableName;
     }
 
-    public QueryResponse listSavings(CognitoIdentity identity) {
+    public QueryResponse listSavings(Subject subject) {
         String keyConditionExpression = "PK = :user AND begins_with ( SK, :saving )";
 
         Map<String, AttributeValue> expressionAttributeValues =
                 Map.of(
-                        ":user",
-                                AttributeValue.builder()
-                                        .s("USER#" + identity.getIdentityId())
-                                        .build(),
+                        ":user", AttributeValue.builder().s("USER#" + subject.getSubject()).build(),
                         ":saving", AttributeValue.builder().s("SAVING#").build());
 
         QueryRequest request =

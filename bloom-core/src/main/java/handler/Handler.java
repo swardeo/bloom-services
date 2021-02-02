@@ -1,7 +1,7 @@
 package handler;
 
-import com.amazonaws.services.lambda.runtime.Context;
+import model.Subject;
 
 public interface Handler<TRequest, TResponse> {
-    TResponse handle(TRequest request, Context context);
+    TResponse handle(TRequest request, Subject subject);
 }

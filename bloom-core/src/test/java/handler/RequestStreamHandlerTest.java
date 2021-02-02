@@ -1,10 +1,7 @@
 package handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import model.HandlerRequest;
 import model.HandlerResponse;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -30,6 +28,7 @@ class RequestStreamHandlerTest {
     Logger logger;
 
     HandlerRequest handlerRequest;
+    Subject subject;
     String request, requestBody, response, mappedResponse;
 
     RequestStreamHandler<String, String> sut;
@@ -49,6 +48,9 @@ class RequestStreamHandlerTest {
         handlerRequest = mock(HandlerRequest.class);
         when(mapper.readValue(input, HandlerRequest.class)).thenReturn(handlerRequest);
 
+        subject = mock(Subject.class);
+        when(handlerRequest.getSubject()).thenReturn(subject);
+
         requestBody = "body";
         when(handlerRequest.getBody()).thenReturn(requestBody);
 
@@ -56,7 +58,7 @@ class RequestStreamHandlerTest {
         when(mapper.readValue(handlerRequest.getBody(), String.class)).thenReturn(request);
 
         response = "response";
-        when(delegate.handle(request, context)).thenReturn(response);
+        when(delegate.handle(request, subject)).thenReturn(response);
 
         mappedResponse = "mapped response";
         when(mapper.writeValueAsString(response)).thenReturn(mappedResponse);
@@ -92,7 +94,7 @@ class RequestStreamHandlerTest {
         sut.handleRequest(input, output, context);
 
         // then
-        verify(delegate, times(1)).handle(request, context);
+        verify(delegate, times(1)).handle(request, subject);
     }
 
     @Test
@@ -104,6 +106,19 @@ class RequestStreamHandlerTest {
 
         // then
         verify(mapper, times(1)).writeValueAsString(response);
+    }
+
+    @Test
+    void doesNotWriteResponseWhenNullResponse() throws IOException {
+        // given
+        String response = null;
+        when(delegate.handle(request, subject)).thenReturn(response);
+
+        // when
+        sut.handleRequest(input, output, context);
+
+        // then
+        verify(mapper, never()).writeValueAsString(response);
     }
 
     @Test
@@ -174,38 +189,39 @@ class RequestStreamHandlerTest {
         RuntimeException expected = new RuntimeException(message);
         when(mapper.readValue(input, HandlerRequest.class)).thenThrow(expected);
 
-        try {
-            // when
-            sut.handleRequest(input, output, context);
+        // when
+        sut.handleRequest(input, output, context);
 
-            // then
-        } catch (RuntimeException e) {
-            verify(exceptionHandler, times(1)).handleException(expected);
-            assertThat(e).hasMessage(message);
-        }
+        // then
+        ArgumentCaptor<RuntimeException> captor = ArgumentCaptor.forClass(RuntimeException.class);
+        verify(exceptionHandler, times(1)).handleException(captor.capture());
+        RuntimeException actual = captor.getValue();
+
+        assertThat(actual.getMessage()).isEqualTo(message);
     }
 
     @Test
     void throwsExceptionWhenBadRequestBody() throws IOException {
         // given
         RuntimeException cause = new IllegalArgumentException("illegal request");
-        when(mapper.readValue(input, HandlerRequest.class)).thenThrow(cause);
+        when(mapper.readValue(handlerRequest.getBody(), String.class)).thenThrow(cause);
 
-        try {
-            // when
-            sut.handleRequest(input, output, context);
+        // when
+        sut.handleRequest(input, output, context);
 
-            // then
-        } catch (BadRequestException actual) {
-            assertThat(actual)
-                    .hasMessage("request body contained illegal values")
-                    .hasCauseReference(cause);
-        }
+        // then
+        ArgumentCaptor<BadRequestException> captor =
+                ArgumentCaptor.forClass(BadRequestException.class);
+        verify(exceptionHandler, times(1)).handleException(captor.capture());
+        BadRequestException actual = captor.getValue();
+
+        assertThat(actual.getCause()).isEqualTo(cause);
+        assertThat(actual.getMessage()).isEqualTo("request body contained illegal values");
     }
 
     static class TestDelegate implements Handler<String, String> {
         @Override
-        public String handle(String s, Context context) {
+        public String handle(String s, Subject subject) {
             return null;
         }
     }

@@ -96,6 +96,31 @@ class HandlerResponseTest {
         assertThat(sut.getHeaders().get("Content-Type")).isEqualTo("application/json");
     }
 
+    @Test
+    void responseAlwaysContainsAccessControlAllowOriginWhenCreated() {
+        // given
+        HandlerResponse.Builder builder = HandlerResponse.newBuilder();
+
+        // when
+        sut = builder.build();
+
+        // then
+        assertThat(sut.getHeaders().get("Access-Control-Allow-Origin")).isEqualTo("*");
+    }
+
+    @Test
+    void responseAlwaysContainsAccessControlAllowMethodsWhenCreated() {
+        // given
+        HandlerResponse.Builder builder = HandlerResponse.newBuilder();
+
+        // when
+        sut = builder.build();
+
+        // then
+        assertThat(sut.getHeaders().get("Access-Control-Allow-Methods"))
+                .isEqualTo("GET, POST, OPTIONS, PUT, DELETE");
+    }
+
     @ParameterizedTest
     @MethodSource("responseProvider")
     void responseSerializesCorrectlyWhenInvoked(
@@ -118,15 +143,15 @@ class HandlerResponseTest {
         return Stream.of(
                 arguments(
                         HandlerResponse.newBuilder().withStatusCode(200),
-                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\"}}"),
+                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\",\"Access-Control-Allow-Origin\":\"*\",\"Access-Control-Allow-Methods\":\"GET, POST, OPTIONS, PUT, DELETE\"}}"),
                 arguments(
                         HandlerResponse.newBuilder().withStatusCode(200).withBody("hello"),
-                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\"},\"body\":\"hello\"}"),
+                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\",\"Access-Control-Allow-Origin\":\"*\",\"Access-Control-Allow-Methods\":\"GET, POST, OPTIONS, PUT, DELETE\"},\"body\":\"hello\"}"),
                 arguments(
                         HandlerResponse.newBuilder()
                                 .withStatusCode(200)
                                 .withBody("hello")
                                 .withHeader("my header", "kaboom"),
-                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\",\"my header\":\"kaboom\"},\"body\":\"hello\"}"));
+                        "{\"statusCode\":200,\"headers\":{\"Content-Type\":\"application/json\",\"Access-Control-Allow-Origin\":\"*\",\"Access-Control-Allow-Methods\":\"GET, POST, OPTIONS, PUT, DELETE\",\"my header\":\"kaboom\"},\"body\":\"hello\"}"));
     }
 }

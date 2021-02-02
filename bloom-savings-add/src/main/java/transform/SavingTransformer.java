@@ -2,7 +2,6 @@ package transform;
 
 import static software.amazon.awssdk.services.dynamodb.model.AttributeValue.builder;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,16 +9,17 @@ import java.util.Map;
 import model.Adjustment;
 import model.OneTimePayment;
 import model.Saving;
+import model.Subject;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class SavingTransformer {
 
     public SavingTransformer() {}
 
-    public Map<String, AttributeValue> toAttributeMap(Saving saving, CognitoIdentity identity) {
+    public Map<String, AttributeValue> toAttributeMap(Saving saving, Subject subject) {
         Map<String, AttributeValue> savingItem = new HashMap<>();
 
-        savingItem.put("PK", builder().s("USER#" + identity.getIdentityId()).build());
+        savingItem.put("PK", builder().s("USER#" + subject.getSubject()).build());
         savingItem.put("SK", builder().s("SAVING#" + saving.getName().getName()).build());
         savingItem.put("StartAmount", builder().s(saving.getStartAmount().toString()).build());
         savingItem.put("MonthlyAmount", builder().s(saving.getMonthlyAmount().toString()).build());

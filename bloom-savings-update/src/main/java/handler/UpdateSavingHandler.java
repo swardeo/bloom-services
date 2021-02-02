@@ -5,10 +5,10 @@ import static provider.DynamoProvider.provideClient;
 import static provider.DynamoProvider.provideTableName;
 import static provider.MapperProvider.provideMapper;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import model.Saving;
+import model.Subject;
 import org.slf4j.Logger;
 import service.UpdateSavingService;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -49,15 +49,14 @@ public class UpdateSavingHandler extends RequestStreamHandler<Saving, Void> {
         }
 
         @Override
-        public Void handle(Saving saving, Context context) {
-            Map<String, AttributeValue> key =
-                    transformer.toKey(saving.getName(), context.getIdentity());
+        public Void handle(Saving saving, Subject subject) {
+            Map<String, AttributeValue> key = transformer.toKey(saving.getName(), subject);
             Map<String, AttributeValue> attributeValueMap = transformer.toAttributeMap(saving);
             service.updateSaving(key, attributeValueMap);
             logger.info(
-                    "Saving {} updated for identity {}",
+                    "Saving {} updated for subject {}",
                     saving.getName().getName(),
-                    context.getIdentity().getIdentityId());
+                    subject.getSubject());
             return null;
         }
     }

@@ -6,11 +6,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
-import com.amazonaws.services.lambda.runtime.Context;
 import handler.ListSavingsHandler.ListSavingsHandlerDelegate;
 import java.util.List;
 import model.Saving;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,24 +20,22 @@ import transform.DynamoTransformer;
 
 class ListSavingsHandlerTest {
 
-    Context mockContext;
+    Subject mockSubject;
     DynamoTransformer mockTransformer;
     ListSavingsService mockService;
-    CognitoIdentity mockIdentity;
     QueryResponse response;
     List mockSavingsList;
 
     @BeforeEach
     void beforeEach() {
-        mockContext = mock(Context.class);
+        mockSubject = mock(Subject.class);
         mockTransformer = mock(DynamoTransformer.class);
         mockService = mock(ListSavingsService.class);
-        mockIdentity = mock(CognitoIdentity.class);
         response = QueryResponse.builder().build();
         mockSavingsList = mock(List.class);
 
-        when(mockContext.getIdentity()).thenReturn(mockIdentity);
-        when(mockService.listSavings(mockIdentity)).thenReturn(response);
+        when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
+        when(mockService.listSavings(mockSubject)).thenReturn(response);
         when(mockTransformer.toSavingsList(response)).thenReturn(mockSavingsList);
     }
 
@@ -60,10 +57,10 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(null, mockContext);
+        sut.handle(null, mockSubject);
 
         // then
-        verify(mockService, times(1)).listSavings(mockIdentity);
+        verify(mockService, times(1)).listSavings(mockSubject);
     }
 
     @Test
@@ -73,7 +70,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(null, mockContext);
+        sut.handle(null, mockSubject);
 
         // then
         ArgumentCaptor<QueryResponse> captor = ArgumentCaptor.forClass(QueryResponse.class);
@@ -90,7 +87,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        List<Saving> actual = sut.handle(null, mockContext);
+        List<Saving> actual = sut.handle(null, mockSubject);
 
         // then
         assertThat(actual).isEqualTo(mockSavingsList);
@@ -105,13 +102,13 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(null, mockContext);
+        sut.handle(null, mockSubject);
 
         // then
         verify(mockLogger, times(1))
                 .info(
-                        "{} savings listed for identity {}",
+                        "{} savings listed for subject {}",
                         mockSavingsList.size(),
-                        mockContext.getIdentity().getIdentityId());
+                        mockSubject.getSubject());
     }
 }

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import model.HandlerRequest;
 import model.HandlerResponse;
+import model.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +52,7 @@ public class RequestStreamHandler<TRequest, TResponse>
         HandlerResponse response;
         try {
             HandlerRequest request = mapper.readValue(input, HandlerRequest.class);
+            Subject subject = request.getSubject();
 
             TRequest req = null;
             try {
@@ -60,13 +62,15 @@ public class RequestStreamHandler<TRequest, TResponse>
             } catch (IllegalArgumentException exception) {
                 throw new BadRequestException("request body contained illegal values", exception);
             }
-            TResponse res = delegate.handle(req, context);
+            TResponse res = delegate.handle(req, subject);
 
             response =
-                    HandlerResponse.newBuilder()
-                            .withBody(mapper.writeValueAsString(res))
-                            .withStatusCode(200)
-                            .build();
+                    null != res
+                            ? HandlerResponse.newBuilder()
+                                    .withBody(mapper.writeValueAsString(res))
+                                    .withStatusCode(200)
+                                    .build()
+                            : HandlerResponse.newBuilder().withStatusCode(200).build();
 
         } catch (IOException exception) {
             logger.error(exception.getMessage(), exception);

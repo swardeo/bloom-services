@@ -6,9 +6,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import handler.HealthHandler.HealthHandlerDelegate;
 import model.HealthResponse;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -22,13 +22,13 @@ class HealthHandlerTest {
 
     DynamoDbClient mockClient;
     String tableName;
-    Context mockContext;
+    Subject mockSubject;
 
     @BeforeEach
     void beforeEach() {
         mockClient = mock(DynamoDbClient.class);
         tableName = "mockTable";
-        mockContext = mock(Context.class);
+        mockSubject = mock(Subject.class);
 
         TableDescription table = TableDescription.builder().tableStatus(TableStatus.ACTIVE).build();
         DescribeTableResponse tableResponse = DescribeTableResponse.builder().table(table).build();
@@ -53,7 +53,7 @@ class HealthHandlerTest {
         HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName);
 
         // when
-        sut.handle(null, mockContext);
+        sut.handle(null, mockSubject);
 
         // then
         verify(mockClient, times(1))
@@ -68,7 +68,7 @@ class HealthHandlerTest {
         HealthResponse expected = HealthResponse.HEALTHY;
 
         // when
-        HealthResponse actual = sut.handle(null, mockContext);
+        HealthResponse actual = sut.handle(null, mockSubject);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -88,7 +88,7 @@ class HealthHandlerTest {
         HealthResponse expected = HealthResponse.UNHEALTHY;
 
         // when
-        HealthResponse actual = sut.handle(null, mockContext);
+        HealthResponse actual = sut.handle(null, mockSubject);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -107,7 +107,7 @@ class HealthHandlerTest {
                 .thenReturn(tableResponse);
 
         // when
-        HealthResponse actual = sut.handle(null, mockContext);
+        HealthResponse actual = sut.handle(null, mockSubject);
 
         // then
         verify(mockLogger, times(1)).info("Table {} is not active", tableName);
