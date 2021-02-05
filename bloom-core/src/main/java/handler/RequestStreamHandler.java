@@ -1,6 +1,7 @@
 package handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.BadRequestException;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class RequestStreamHandler<TRequest, TResponse>
                 if (Void.class != requestClazz) {
                     req = mapper.readValue(request.getBody(), requestClazz);
                 }
-            } catch (IllegalArgumentException exception) {
+            } catch (JsonProcessingException exception) {
                 throw new BadRequestException("request body contained illegal values", exception);
             }
             TResponse res = delegate.handle(req, subject);

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exception.BadRequestException;
 import java.io.IOException;
@@ -203,8 +204,8 @@ class RequestStreamHandlerTest {
     @Test
     void throwsExceptionWhenBadRequestBody() throws IOException {
         // given
-        RuntimeException cause = new IllegalArgumentException("illegal request");
-        when(mapper.readValue(handlerRequest.getBody(), String.class)).thenThrow(cause);
+        JsonProcessingException exception = mock(JsonProcessingException.class);
+        when(mapper.readValue(handlerRequest.getBody(), String.class)).thenThrow(exception);
 
         // when
         sut.handleRequest(input, output, context);
@@ -215,7 +216,7 @@ class RequestStreamHandlerTest {
         verify(exceptionHandler, times(1)).handleException(captor.capture());
         BadRequestException actual = captor.getValue();
 
-        assertThat(actual.getCause()).isEqualTo(cause);
+        assertThat(actual.getCause()).isEqualTo(exception);
         assertThat(actual.getMessage()).isEqualTo("request body contained illegal values");
     }
 
