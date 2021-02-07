@@ -7,8 +7,9 @@ import static provider.MapperProvider.provideMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
-import model.NameRequest;
+import model.RequestDetails;
 import model.Subject;
+import model.request.NameRequest;
 import org.slf4j.Logger;
 import service.DeleteSavingService;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -51,7 +52,7 @@ public class DeleteSavingHandler extends RequestStreamHandler<NameRequest, Void>
         }
 
         @Override
-        public Void handle(NameRequest request, Subject subject) {
+        public Void handle(NameRequest request, Subject subject, RequestDetails details) {
             Map<String, AttributeValue> key = transformer.toKey(request, subject);
             service.deleteSaving(key);
             logger.info(

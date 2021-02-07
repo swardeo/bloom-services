@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
-class DynamoTransformerTest {
+class SavingsDynamoTransformerTest {
 
-    DynamoTransformer sut;
+    SavingsDynamoTransformer sut;
 
     Name name;
     Amount startAmount;
@@ -36,7 +36,7 @@ class DynamoTransformerTest {
 
     @BeforeEach
     void beforeEach() {
-        sut = new DynamoTransformer();
+        sut = new SavingsDynamoTransformer();
 
         name = new Name("MySaving");
         startAmount = new Amount("206.78");
@@ -249,5 +249,25 @@ class DynamoTransformerTest {
         assertThat(actual).hasSize(2);
         assertThat(actual.get(0)).usingRecursiveComparison().isEqualTo(expectedBaseSaving);
         assertThat(actual.get(1)).usingRecursiveComparison().isEqualTo(expectedComplexSaving);
+    }
+
+    @Test
+    void returnsSavingWhenInvoked() {
+        // given
+        Saving expectedSaving =
+                Saving.newBuilder()
+                        .withName(name)
+                        .withStartAmount(startAmount)
+                        .withMonthlyAmount(monthlyAmount)
+                        .withStartDate(startDate)
+                        .withEndDate(endDate)
+                        .withYearlyRate(yearlyRate)
+                        .build();
+
+        // when
+        Saving actual = sut.toSaving(baseItem);
+
+        // then
+        assertThat(actual).usingRecursiveComparison().isEqualTo(expectedSaving);
     }
 }

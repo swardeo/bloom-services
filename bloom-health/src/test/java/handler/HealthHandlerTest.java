@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import handler.HealthHandler.HealthHandlerDelegate;
 import model.HealthResponse;
+import model.RequestDetails;
 import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,12 +24,14 @@ class HealthHandlerTest {
     DynamoDbClient mockClient;
     String tableName;
     Subject mockSubject;
+    RequestDetails mockDetails;
 
     @BeforeEach
     void beforeEach() {
         mockClient = mock(DynamoDbClient.class);
         tableName = "mockTable";
         mockSubject = mock(Subject.class);
+        mockDetails = mock(RequestDetails.class);
 
         TableDescription table = TableDescription.builder().tableStatus(TableStatus.ACTIVE).build();
         DescribeTableResponse tableResponse = DescribeTableResponse.builder().table(table).build();
@@ -53,7 +56,7 @@ class HealthHandlerTest {
         HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName);
 
         // when
-        sut.handle(null, mockSubject);
+        sut.handle(null, mockSubject, mockDetails);
 
         // then
         verify(mockClient, times(1))
@@ -68,7 +71,7 @@ class HealthHandlerTest {
         HealthResponse expected = HealthResponse.HEALTHY;
 
         // when
-        HealthResponse actual = sut.handle(null, mockSubject);
+        HealthResponse actual = sut.handle(null, mockSubject, mockDetails);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -88,7 +91,7 @@ class HealthHandlerTest {
         HealthResponse expected = HealthResponse.UNHEALTHY;
 
         // when
-        HealthResponse actual = sut.handle(null, mockSubject);
+        HealthResponse actual = sut.handle(null, mockSubject, mockDetails);
 
         // then
         assertThat(actual).isEqualTo(expected);
@@ -107,7 +110,7 @@ class HealthHandlerTest {
                 .thenReturn(tableResponse);
 
         // when
-        HealthResponse actual = sut.handle(null, mockSubject);
+        HealthResponse actual = sut.handle(null, mockSubject, mockDetails);
 
         // then
         verify(mockLogger, times(1)).info("Table {} is not active", tableName);

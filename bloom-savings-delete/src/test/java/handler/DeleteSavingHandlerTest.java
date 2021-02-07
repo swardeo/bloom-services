@@ -5,11 +5,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import handler.DeleteSavingHandler.DeleteSavingHandlerDelegate;
 import java.util.Map;
-import model.NameRequest;
+import model.RequestDetails;
 import model.Subject;
+import model.request.NameRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -19,15 +19,16 @@ import transform.NameRequestTransformer;
 class DeleteSavingHandlerTest {
 
     Subject mockSubject;
+    RequestDetails mockDetails;
     NameRequestTransformer mockTransformer;
     DeleteSavingService mockService;
     NameRequest mockNameRequest;
-    CognitoIdentity mockIdentity;
     Map mockKey;
 
     @BeforeEach
     void beforeEach() {
         mockSubject = mock(Subject.class);
+        mockDetails = mock(RequestDetails.class);
         mockTransformer = mock(NameRequestTransformer.class);
         mockService = mock(DeleteSavingService.class);
         mockNameRequest = mock(NameRequest.class);
@@ -56,7 +57,7 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockNameRequest, mockSubject);
+        sut.handle(mockNameRequest, mockSubject, mockDetails);
 
         // then
         verify(mockTransformer, times(1)).toKey(mockNameRequest, mockSubject);
@@ -69,7 +70,7 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockNameRequest, mockSubject);
+        sut.handle(mockNameRequest, mockSubject, mockDetails);
 
         // then
         verify(mockService, times(1)).deleteSaving(mockKey);
@@ -83,7 +84,7 @@ class DeleteSavingHandlerTest {
                 new DeleteSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(mockNameRequest, mockSubject);
+        sut.handle(mockNameRequest, mockSubject, mockDetails);
 
         // then
         verify(mockLogger, times(1))

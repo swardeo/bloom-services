@@ -27,6 +27,9 @@ Parameters:
   LambdaSavingsUpdateVersion:
     Type: String
 
+  LambdaSavingsGetVersion:
+    Type: String
+
 Conditions:
   IsProduction: !Equals [!Ref Environment, prod]
 
@@ -412,8 +415,56 @@ Resources:
           Action: 'lambda:InvokeFunction'
           Resource: !GetAtt LambdaSavingsUpdate.Arn
 
+  LambdaSavingsGet:
+    DependsOn: LambdaSavingsGetRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-savings-get-${LambdaSavingsGetVersion}.zip'
+      Description: Bloom Savings Get Function
+      FunctionName: !Sub '${Environment}-bloom-savings-get'
+      Handler: handler.GetSavingHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaSavingsGetRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaSavingsGetVersion
+
+  LambdaSavingsGetRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaSavingsUpdateGetPolicy:
+    DependsOn: ['LambdaSavingsGet', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: savings-get-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaSavingsGet.Arn
+
   LambdaLoggingPolicy:
-    DependsOn: ['LambdaHealthRole', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsListRole', 'LambdaSavingsUpdateRole']
+    DependsOn: ['LambdaHealthRole', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsListRole', 'LambdaSavingsUpdateRole', 'LambdaSavingsGetRole']
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: lambda-logging-policy
@@ -432,9 +483,10 @@ Resources:
         - !Ref LambdaSavingsDeleteRole
         - !Ref LambdaSavingsListRole
         - !Ref LambdaSavingsUpdateRole
+        - !Ref LambdaSavingsGetRole
 
   UserTableReadPolicy:
-    DependsOn: ['UserTable', 'LambdaHealthRole', 'LambdaSavingsListRole']
+    DependsOn: ['UserTable', 'LambdaHealthRole', 'LambdaSavingsListRole', 'LambdaSavingsGetRole']
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: user-table-read-policy
@@ -451,6 +503,7 @@ Resources:
       Roles:
         - !Ref LambdaHealthRole
         - !Ref LambdaSavingsListRole
+        - !Ref LambdaSavingsGetRole
 
   UserTableWritePolicy:
     DependsOn: ['UserTable', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsUpdateRole']
@@ -636,9 +689,26 @@ Resources:
       ResourceId: !Ref ResourceSavingsName
       RestApiId: !Ref ApiGateway
 
+  MethodSavingsGet:
+    DependsOn:
+      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsGet']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaSavingsGet.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceSavingsName
+      RestApiId: !Ref ApiGateway
+
   DeployGateway:
     DependsOn:
-      ['ApiGateway', 'MethodHealth', 'MethodSavingsAdd', 'MethodSavingsOptions', 'MethodSavingsDelete', 'MethodSavingsList', 'MethodSavingsUpdate']
+      ['ApiGateway', 'MethodHealth', 'MethodSavingsAdd', 'MethodSavingsOptions', 'MethodSavingsDelete', 'MethodSavingsList', 'MethodSavingsUpdate', 'MethodSavingsGet']
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref ApiGateway

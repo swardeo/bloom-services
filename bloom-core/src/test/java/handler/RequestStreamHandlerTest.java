@@ -1,7 +1,13 @@
 package handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,8 +16,10 @@ import exception.BadRequestException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import model.HandlerRequest;
 import model.HandlerResponse;
+import model.RequestDetails;
 import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +38,7 @@ class RequestStreamHandlerTest {
 
     HandlerRequest handlerRequest;
     Subject subject;
+    RequestDetails details;
     String request, requestBody, response, mappedResponse;
 
     RequestStreamHandler<String, String> sut;
@@ -47,7 +56,14 @@ class RequestStreamHandlerTest {
         sut = new RequestStreamHandler<>(mapper, delegate, String.class, exceptionHandler, logger);
 
         handlerRequest = mock(HandlerRequest.class);
+        when(handlerRequest.getHttpMethod()).thenReturn("GET");
+        when(handlerRequest.getPath()).thenReturn("/blah");
+        when(handlerRequest.getQueryStringParameters()).thenReturn(Map.of());
+        when(handlerRequest.getPathParameters()).thenReturn(Map.of());
+        when(handlerRequest.getHeaders()).thenReturn(Map.of());
         when(mapper.readValue(input, HandlerRequest.class)).thenReturn(handlerRequest);
+
+        details = RequestDetails.fromHandlerRequest(handlerRequest);
 
         subject = mock(Subject.class);
         when(handlerRequest.getSubject()).thenReturn(subject);
@@ -59,7 +75,7 @@ class RequestStreamHandlerTest {
         when(mapper.readValue(handlerRequest.getBody(), String.class)).thenReturn(request);
 
         response = "response";
-        when(delegate.handle(request, subject)).thenReturn(response);
+        when(delegate.handle(eq(request), eq(subject), any())).thenReturn(response);
 
         mappedResponse = "mapped response";
         when(mapper.writeValueAsString(response)).thenReturn(mappedResponse);
@@ -88,6 +104,21 @@ class RequestStreamHandlerTest {
     }
 
     @Test
+    void createsRequestDetailsWhenInvoked() throws IOException {
+        // given
+
+        // when
+        sut.handleRequest(input, output, context);
+
+        // then
+        ArgumentCaptor<RequestDetails> captor = ArgumentCaptor.forClass(RequestDetails.class);
+        verify(delegate, times(1)).handle(eq(request), eq(subject), captor.capture());
+        RequestDetails actual = captor.getValue();
+
+        assertThat(actual).usingRecursiveComparison().isEqualTo(details);
+    }
+
+    @Test
     void handlesRequestWhenInvoked() throws IOException {
         // given
 
@@ -95,7 +126,7 @@ class RequestStreamHandlerTest {
         sut.handleRequest(input, output, context);
 
         // then
-        verify(delegate, times(1)).handle(request, subject);
+        verify(delegate, times(1)).handle(eq(request), eq(subject), any());
     }
 
     @Test
@@ -113,7 +144,7 @@ class RequestStreamHandlerTest {
     void doesNotWriteResponseWhenNullResponse() throws IOException {
         // given
         String response = null;
-        when(delegate.handle(request, subject)).thenReturn(response);
+        when(delegate.handle(eq(request), eq(subject), any())).thenReturn(response);
 
         // when
         sut.handleRequest(input, output, context);
@@ -222,7 +253,7 @@ class RequestStreamHandlerTest {
 
     static class TestDelegate implements Handler<String, String> {
         @Override
-        public String handle(String s, Subject subject) {
+        public String handle(String s, Subject subject, RequestDetails details) {
             return null;
         }
     }

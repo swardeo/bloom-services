@@ -1,2 +1,4 @@
 rootProject.name = 'bloom-services'
-include 'bloom-core', 'bloom-health', 'bloom-savings-add', 'bloom-savings-delete', 'bloom-savings-update', 'bloom-savings-list'
+include 'bloom-core'
+include 'bloom-health'
+include 'bloom-savings-add', 'bloom-savings-delete', 'bloom-savings-update', 'bloom-savings-list', 'bloom-savings-get'

@@ -13,22 +13,22 @@ import model.Saving;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
-public class DynamoTransformer {
+public class SavingsDynamoTransformer {
 
-    public DynamoTransformer() {}
+    public SavingsDynamoTransformer() {}
 
     public List<Saving> toSavingsList(QueryResponse response) {
         List<Saving> savingsList = new ArrayList<>();
 
         for (Map<String, AttributeValue> attributeValueMap : response.items()) {
-            Saving saving = createSaving(attributeValueMap);
+            Saving saving = toSaving(attributeValueMap);
             savingsList.add(saving);
         }
 
         return savingsList;
     }
 
-    private static Saving createSaving(Map<String, AttributeValue> attributeValueMap) {
+    public Saving toSaving(Map<String, AttributeValue> attributeValueMap) {
         Saving.Builder builder = Saving.newBuilder();
 
         builder.withName(new Name(attributeValueMap.get("SK").s().split("#")[1]));
