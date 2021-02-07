@@ -1,6 +1,7 @@
 package handler;
 
 import exception.BadRequestException;
+import exception.NotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import model.HandlerResponse;
@@ -33,6 +34,7 @@ public class ExceptionHandler {
 
     private void populateExceptionResponseMap() {
         exceptionResponseMap.put(BadRequestException.class, 400);
+        exceptionResponseMap.put(NotFoundException.class, 404);
         exceptionResponseMap.put(RuntimeException.class, 500);
     }
 

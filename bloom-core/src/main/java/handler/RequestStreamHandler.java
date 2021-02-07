@@ -1,5 +1,7 @@
 package handler;
 
+import static model.RequestDetails.fromHandlerRequest;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import model.HandlerRequest;
 import model.HandlerResponse;
+import model.RequestDetails;
 import model.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +66,8 @@ public class RequestStreamHandler<TRequest, TResponse>
             } catch (JsonProcessingException exception) {
                 throw new BadRequestException("request body contained illegal values", exception);
             }
-            TResponse res = delegate.handle(req, subject);
+            RequestDetails details = fromHandlerRequest(request);
+            TResponse res = delegate.handle(req, subject, details);
 
             response =
                     null != res

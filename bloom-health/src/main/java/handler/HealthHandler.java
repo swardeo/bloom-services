@@ -4,6 +4,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.HealthResponse;
+import model.RequestDetails;
 import model.Subject;
 import org.slf4j.Logger;
 import provider.DynamoProvider;
@@ -40,7 +41,7 @@ public class HealthHandler extends RequestStreamHandler<Void, HealthResponse> {
         }
 
         @Override
-        public HealthResponse handle(Void request, Subject subject) {
+        public HealthResponse handle(Void request, Subject subject, RequestDetails details) {
             DescribeTableResponse response =
                     dynamoDbClient.describeTable(
                             DescribeTableRequest.builder().tableName(tableName).build());

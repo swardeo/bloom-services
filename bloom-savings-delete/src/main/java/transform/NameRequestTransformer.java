@@ -4,8 +4,8 @@ import static software.amazon.awssdk.services.dynamodb.model.AttributeValue.buil
 
 import java.util.HashMap;
 import java.util.Map;
-import model.NameRequest;
 import model.Subject;
+import model.request.NameRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class NameRequestTransformer {

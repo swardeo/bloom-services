@@ -7,6 +7,7 @@ import static provider.MapperProvider.provideMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
+import model.RequestDetails;
 import model.Saving;
 import model.Subject;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public class AddSavingHandler extends RequestStreamHandler<Saving, Void> {
         }
 
         @Override
-        public Void handle(Saving saving, Subject subject) {
+        public Void handle(Saving saving, Subject subject, RequestDetails details) {
             Map<String, AttributeValue> attributeValueMap =
                     transformer.toAttributeMap(saving, subject);
             service.addSaving(attributeValueMap);

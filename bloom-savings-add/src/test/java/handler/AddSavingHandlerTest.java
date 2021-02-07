@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import handler.AddSavingHandler.AddSavingHandlerDelegate;
 import java.util.Map;
 import model.Name;
+import model.RequestDetails;
 import model.Saving;
 import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ class AddSavingHandlerTest {
     Saving mockSaving;
     Map mockAttributeMap;
     Subject mockSubject;
+    RequestDetails mockDetails;
 
     @BeforeEach
     void beforeEach() {
@@ -31,6 +33,7 @@ class AddSavingHandlerTest {
         mockSaving = mock(Saving.class);
         mockAttributeMap = mock(Map.class);
         mockSubject = mock(Subject.class);
+        mockDetails = mock(RequestDetails.class);
 
         when(mockTransformer.toAttributeMap(mockSaving, mockSubject)).thenReturn(mockAttributeMap);
 
@@ -58,7 +61,7 @@ class AddSavingHandlerTest {
         AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockTransformer, times(1)).toAttributeMap(mockSaving, mockSubject);
@@ -70,7 +73,7 @@ class AddSavingHandlerTest {
         AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockService, times(1)).addSaving(mockAttributeMap);
@@ -84,7 +87,7 @@ class AddSavingHandlerTest {
                 new AddSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockLogger, times(1))

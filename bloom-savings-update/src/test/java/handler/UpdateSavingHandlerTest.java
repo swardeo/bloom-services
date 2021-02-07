@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import handler.UpdateSavingHandler.UpdateSavingHandlerDelegate;
 import java.util.Map;
 import model.Name;
+import model.RequestDetails;
 import model.Saving;
 import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import transform.SavingTransformer;
 class UpdateSavingHandlerTest {
 
     Subject mockSubject;
+    RequestDetails mockDetails;
     SavingTransformer mockTransformer;
     UpdateSavingService mockService;
     Saving mockSaving;
@@ -28,6 +30,7 @@ class UpdateSavingHandlerTest {
     @BeforeEach
     void beforeEach() {
         mockSubject = mock(Subject.class);
+        mockDetails = mock(RequestDetails.class);
         mockTransformer = mock(SavingTransformer.class);
         mockService = mock(UpdateSavingService.class);
         mockSaving = mock(Saving.class);
@@ -63,7 +66,7 @@ class UpdateSavingHandlerTest {
                 new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockTransformer, times(1)).toKey(mockSaving.getName(), mockSubject);
@@ -76,7 +79,7 @@ class UpdateSavingHandlerTest {
                 new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockTransformer, times(1)).toAttributeMap(mockSaving);
@@ -89,7 +92,7 @@ class UpdateSavingHandlerTest {
                 new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockService, times(1)).updateSaving(mockKey, mockAttributeMap);
@@ -103,7 +106,7 @@ class UpdateSavingHandlerTest {
                 new UpdateSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(mockSaving, mockSubject);
+        sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
         verify(mockLogger, times(1))

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import handler.ListSavingsHandler.ListSavingsHandlerDelegate;
 import java.util.List;
+import model.RequestDetails;
 import model.Saving;
 import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +17,13 @@ import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import service.ListSavingsService;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import transform.DynamoTransformer;
+import transform.SavingsDynamoTransformer;
 
 class ListSavingsHandlerTest {
 
     Subject mockSubject;
-    DynamoTransformer mockTransformer;
+    RequestDetails mockDetails;
+    SavingsDynamoTransformer mockTransformer;
     ListSavingsService mockService;
     QueryResponse response;
     List mockSavingsList;
@@ -29,7 +31,8 @@ class ListSavingsHandlerTest {
     @BeforeEach
     void beforeEach() {
         mockSubject = mock(Subject.class);
-        mockTransformer = mock(DynamoTransformer.class);
+        mockDetails = mock(RequestDetails.class);
+        mockTransformer = mock(SavingsDynamoTransformer.class);
         mockService = mock(ListSavingsService.class);
         response = QueryResponse.builder().build();
         mockSavingsList = mock(List.class);
@@ -57,7 +60,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(null, mockSubject);
+        sut.handle(null, mockSubject, mockDetails);
 
         // then
         verify(mockService, times(1)).listSavings(mockSubject);
@@ -70,7 +73,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        sut.handle(null, mockSubject);
+        sut.handle(null, mockSubject, mockDetails);
 
         // then
         ArgumentCaptor<QueryResponse> captor = ArgumentCaptor.forClass(QueryResponse.class);
@@ -87,7 +90,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        List<Saving> actual = sut.handle(null, mockSubject);
+        List<Saving> actual = sut.handle(null, mockSubject, mockDetails);
 
         // then
         assertThat(actual).isEqualTo(mockSavingsList);
@@ -102,7 +105,7 @@ class ListSavingsHandlerTest {
                 new ListSavingsHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
-        sut.handle(null, mockSubject);
+        sut.handle(null, mockSubject, mockDetails);
 
         // then
         verify(mockLogger, times(1))
