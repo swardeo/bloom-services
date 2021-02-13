@@ -464,7 +464,15 @@ Resources:
           Resource: !GetAtt LambdaSavingsGet.Arn
 
   LambdaLoggingPolicy:
-    DependsOn: ['LambdaHealthRole', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsListRole', 'LambdaSavingsUpdateRole', 'LambdaSavingsGetRole']
+    DependsOn:
+      [
+        'LambdaHealthRole',
+        'LambdaSavingsAddRole',
+        'LambdaSavingsDeleteRole',
+        'LambdaSavingsListRole',
+        'LambdaSavingsUpdateRole',
+        'LambdaSavingsGetRole',
+      ]
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: lambda-logging-policy
@@ -486,7 +494,13 @@ Resources:
         - !Ref LambdaSavingsGetRole
 
   UserTableReadPolicy:
-    DependsOn: ['UserTable', 'LambdaHealthRole', 'LambdaSavingsListRole', 'LambdaSavingsGetRole']
+    DependsOn:
+      [
+        'UserTable',
+        'LambdaHealthRole',
+        'LambdaSavingsListRole',
+        'LambdaSavingsGetRole',
+      ]
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: user-table-read-policy
@@ -506,7 +520,13 @@ Resources:
         - !Ref LambdaSavingsGetRole
 
   UserTableWritePolicy:
-    DependsOn: ['UserTable', 'LambdaSavingsAddRole', 'LambdaSavingsDeleteRole', 'LambdaSavingsUpdateRole']
+    DependsOn:
+      [
+        'UserTable',
+        'LambdaSavingsAddRole',
+        'LambdaSavingsDeleteRole',
+        'LambdaSavingsUpdateRole',
+      ]
     Type: 'AWS::IAM::Policy'
     Properties:
       PolicyName: user-table-write-policy
@@ -593,6 +613,7 @@ Resources:
       RestApiId: !Ref ApiGateway
 
   MethodSavingsOptions:
+    DependsOn: ApiGateway
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
@@ -602,7 +623,7 @@ Resources:
           - StatusCode: 200
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
             ResponseTemplates:
               application/json: ''
@@ -619,6 +640,36 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: false
             method.response.header.Access-Control-Allow-Origin: false
       ResourceId: !Ref ResourceSavings
+      RestApiId: !Ref ApiGateway
+
+  MethodSavingsNameOptions:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+      ResourceId: !Ref ResourceSavingsName
       RestApiId: !Ref ApiGateway
 
   MethodSavingsAdd:
@@ -640,7 +691,12 @@ Resources:
 
   MethodSavingsDelete:
     DependsOn:
-      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsDelete']
+      [
+        'ApiGateway',
+        'ResourceSavingsName',
+        'ApiGatewayRole',
+        'LambdaSavingsDelete',
+      ]
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: DELETE
@@ -674,7 +730,12 @@ Resources:
 
   MethodSavingsUpdate:
     DependsOn:
-      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsUpdate']
+      [
+        'ApiGateway',
+        'ResourceSavingsName',
+        'ApiGatewayRole',
+        'LambdaSavingsUpdate',
+      ]
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: PUT
@@ -691,7 +752,12 @@ Resources:
 
   MethodSavingsGet:
     DependsOn:
-      ['ApiGateway', 'ResourceSavingsName', 'ApiGatewayRole', 'LambdaSavingsGet']
+      [
+        'ApiGateway',
+        'ResourceSavingsName',
+        'ApiGatewayRole',
+        'LambdaSavingsGet',
+      ]
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: GET
@@ -708,7 +774,17 @@ Resources:
 
   DeployGateway:
     DependsOn:
-      ['ApiGateway', 'MethodHealth', 'MethodSavingsAdd', 'MethodSavingsOptions', 'MethodSavingsDelete', 'MethodSavingsList', 'MethodSavingsUpdate', 'MethodSavingsGet']
+      [
+        'ApiGateway',
+        'MethodHealth',
+        'MethodSavingsAdd',
+        'MethodSavingsOptions',
+        'MethodSavingsDelete',
+        'MethodSavingsList',
+        'MethodSavingsUpdate',
+        'MethodSavingsGet',
+        'MethodSavingsNameOptions',
+      ]
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref ApiGateway
