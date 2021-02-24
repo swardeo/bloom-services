@@ -10,62 +10,57 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = Saving.Builder.class)
+@JsonDeserialize(builder = Debt.Builder.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Saving {
+public class Debt {
 
     private final Name name;
     private final Amount startAmount;
     private final Amount monthlyAmount;
     private final Date startDate;
-    private final Date endDate;
     private final Rate yearlyRate;
     private final List<Adjustment> adjustments;
     private final List<OneTimePayment> oneTimePayments;
 
-    public Saving(Builder builder) {
-        validateSaving(builder);
+    public Debt(Builder builder) {
+        validateDebt(builder);
         this.name = builder.name;
         this.startAmount = builder.startAmount;
         this.monthlyAmount = builder.monthlyAmount;
         this.startDate = builder.startDate;
-        this.endDate = builder.endDate;
         this.yearlyRate = builder.yearlyRate;
         this.adjustments = null != builder.adjustments ? copyOf(builder.adjustments) : List.of();
         this.oneTimePayments =
                 null != builder.oneTimePayments ? copyOf(builder.oneTimePayments) : List.of();
     }
 
-    private static void validateSaving(Builder builder) {
+    private static void validateDebt(Builder builder) {
         checkNull(builder.name, "name");
         checkNull(builder.startAmount, "startAmount");
         checkNull(builder.monthlyAmount, "monthlyAmount");
         checkNull(builder.startDate, "startDate");
-        checkNull(builder.endDate, "endDate");
         checkNull(builder.yearlyRate, "yearlyRate");
 
         if (0 > builder.startAmount.getAmount().compareTo(BigDecimal.ZERO)) {
             throw new IllegalArgumentException("startAmount cannot be negative");
         }
-        if (builder.endDate.getDate().isBefore(builder.startDate.getDate())) {
-            throw new IllegalArgumentException("endDate cannot be before startDate");
-        }
         if (null != builder.adjustments && 0 < builder.adjustments.size()) {
             validateAdjustmentDates(
                     builder.startDate.getDate(),
-                    builder.endDate.getDate(),
+                    YearMonth.of(2050, 12),
                     builder.adjustments,
-                    "adjustment dates should be in range (startDate, endDate)");
+                    "adjustment dates should be in range (startDate, 2050-12)");
         }
         if (null != builder.oneTimePayments && 0 < builder.oneTimePayments.size()) {
             validateOneTimePaymentDates(
                     builder.startDate.getDate(),
-                    builder.endDate.getDate(),
+                    YearMonth.of(2050, 12),
                     builder.oneTimePayments,
-                    "oneTimePayment dates should be in range (startDate, endDate)");
+                    "oneTimePayment dates should be in range (startDate, 2050-12)");
         }
     }
 
@@ -83,10 +78,6 @@ public class Saving {
 
     public Date getStartDate() {
         return startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
     }
 
     public Rate getYearlyRate() {
@@ -112,7 +103,6 @@ public class Saving {
         private Amount startAmount;
         private Amount monthlyAmount;
         private Date startDate;
-        private Date endDate;
         private Rate yearlyRate;
         private List<Adjustment> adjustments;
         private List<OneTimePayment> oneTimePayments;
@@ -139,11 +129,6 @@ public class Saving {
             return this;
         }
 
-        public Builder withEndDate(Date endDate) {
-            this.endDate = endDate;
-            return this;
-        }
-
         public Builder withYearlyRate(Rate yearlyRate) {
             this.yearlyRate = yearlyRate;
             return this;
@@ -159,8 +144,8 @@ public class Saving {
             return this;
         }
 
-        public Saving build() {
-            return new Saving(this);
+        public Debt build() {
+            return new Debt(this);
         }
     }
 }
