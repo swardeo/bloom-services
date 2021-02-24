@@ -4,6 +4,8 @@ import java.util.Map;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 public class DynamoService {
 
@@ -18,6 +20,19 @@ public class DynamoService {
     public void add(Map<String, AttributeValue> attributeValueMap) {
         PutItemRequest request =
                 PutItemRequest.builder().tableName(tableName).item(attributeValueMap).build();
+
         client.putItem(request);
+    }
+
+    public QueryResponse list(
+            String keyConditionExpression, Map<String, AttributeValue> expressionAttributeValues) {
+        QueryRequest request =
+                QueryRequest.builder()
+                        .tableName(tableName)
+                        .keyConditionExpression(keyConditionExpression)
+                        .expressionAttributeValues(expressionAttributeValues)
+                        .build();
+
+        return client.query(request);
     }
 }

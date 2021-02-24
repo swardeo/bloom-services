@@ -6,40 +6,42 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import handler.ListSavingsHandler.ListSavingsHandlerDelegate;
+import handler.ListDebtsHandler.ListDebtsHandlerDelegate;
 import java.util.List;
+import model.Debt;
 import model.RequestDetails;
-import model.Saving;
 import model.Subject;
+import model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
-import service.ListSavingsService;
+import service.ListTypeService;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import transform.SavingsDynamoTransformer;
+import transform.DebtsDynamoTransformer;
 
-class ListSavingsHandlerTest {
+class ListDebtsHandlerTest {
 
     Subject mockSubject;
     RequestDetails mockDetails;
-    SavingsDynamoTransformer mockTransformer;
-    ListSavingsService mockService;
+    DebtsDynamoTransformer mockTransformer;
+    ListTypeService mockService;
     QueryResponse response;
-    List mockSavingsList;
+    List mockDebtsList;
 
     @BeforeEach
     void beforeEach() {
-        mockSubject = mock(Subject.class);
-        mockDetails = mock(RequestDetails.class);
-        mockTransformer = mock(SavingsDynamoTransformer.class);
-        mockService = mock(ListSavingsService.class);
+        mockSubject = Mockito.mock(Subject.class);
+        mockDetails = Mockito.mock(RequestDetails.class);
+        mockTransformer = Mockito.mock(DebtsDynamoTransformer.class);
+        mockService = Mockito.mock(ListTypeService.class);
         response = QueryResponse.builder().build();
-        mockSavingsList = mock(List.class);
+        mockDebtsList = mock(List.class);
 
         when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
-        when(mockService.listSavings(mockSubject)).thenReturn(response);
-        when(mockTransformer.toSavingsList(response)).thenReturn(mockSavingsList);
+        when(mockService.list(mockSubject, Type.DEBT)).thenReturn(response);
+        when(mockTransformer.toDebtsList(response)).thenReturn(mockDebtsList);
     }
 
     @Test
@@ -47,7 +49,7 @@ class ListSavingsHandlerTest {
         // given
 
         // when
-        new ListSavingsHandlerDelegate(mockTransformer, mockService);
+        new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // then
         // no exception
@@ -56,28 +58,26 @@ class ListSavingsHandlerTest {
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
+        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
 
         // then
-        verify(mockService, times(1)).listSavings(mockSubject);
+        verify(mockService, times(1)).list(mockSubject, Type.DEBT);
     }
 
     @Test
-    void transformerInvokedForAttributeMapWhenDelegateHandled() {
+    void transformerInvokedForQueryResponseWhenDelegateHandled() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
+        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
 
         // then
         ArgumentCaptor<QueryResponse> captor = ArgumentCaptor.forClass(QueryResponse.class);
-        verify(mockTransformer, times(1)).toSavingsList(captor.capture());
+        verify(mockTransformer, times(1)).toDebtsList(captor.capture());
         QueryResponse actual = captor.getValue();
 
         assertThat(actual).isEqualTo(response);
@@ -86,31 +86,30 @@ class ListSavingsHandlerTest {
     @Test
     void returnsCorrectResponseWhenDelegateInvoked() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
+        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
-        List<Saving> actual = sut.handle(null, mockSubject, mockDetails);
+        List<Debt> actual = sut.handle(null, mockSubject, mockDetails);
 
         // then
-        assertThat(actual).isEqualTo(mockSavingsList);
+        assertThat(actual).isEqualTo(mockDebtsList);
     }
 
     @Test
     void logsWhenSavingsListReturned() {
         // given
         Logger mockLogger = mock(Logger.class);
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService, mockLogger);
+        ListDebtsHandlerDelegate sut =
+                new ListDebtsHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
 
         // then
-        verify(mockLogger, times(1))
+        verify(mockLogger)
                 .info(
-                        "{} savings listed for subject {}",
-                        mockSavingsList.size(),
+                        "{} debts listed for subject {}",
+                        mockDebtsList.size(),
                         mockSubject.getSubject());
     }
 }

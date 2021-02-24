@@ -35,11 +35,10 @@ public class DebtTransformer {
         savingItem.put("YearlyRate", builder().s(debt.getYearlyRate().toString()).build());
         savingItem.put(
                 "Adjustments",
-                adjustmentsTransformer.createAdjustmentsAttribute(debt.getAdjustments()));
+                adjustmentsTransformer.toAdjustmentsAttribute(debt.getAdjustments()));
         savingItem.put(
                 "OneTimePayments",
-                oneTimePaymentsTransformer.createOneTimePaymentsAttribute(
-                        debt.getOneTimePayments()));
+                oneTimePaymentsTransformer.toOneTimePaymentsAttribute(debt.getOneTimePayments()));
 
         return savingItem;
     }
