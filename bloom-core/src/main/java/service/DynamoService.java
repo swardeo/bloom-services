@@ -3,6 +3,7 @@ package service;
 import java.util.Map;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
@@ -34,5 +35,12 @@ public class DynamoService {
                         .build();
 
         return client.query(request);
+    }
+
+    public void delete(Map<String, AttributeValue> key) {
+        DeleteItemRequest request =
+                DeleteItemRequest.builder().tableName(tableName).key(key).build();
+
+        client.deleteItem(request);
     }
 }
