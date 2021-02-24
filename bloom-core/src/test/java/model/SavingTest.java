@@ -243,6 +243,25 @@ class SavingTest {
         }
     }
 
+    @Test
+    void noExceptionWhenStartAmountZero() {
+        // given
+        Builder builder =
+                Saving.newBuilder()
+                        .withName(name)
+                        .withStartAmount(new Amount("0.00"))
+                        .withMonthlyAmount(monthlyAmount)
+                        .withStartDate(startDate)
+                        .withEndDate(endDate)
+                        .withYearlyRate(yearlyRate);
+
+        // when
+        builder.build();
+
+        // then
+        // no exception
+    }
+
     @ParameterizedTest
     @MethodSource("builtExceptionProvider")
     void throwsExceptionWhenNullNameProvided(Builder builder, String exceptionMessage) {
