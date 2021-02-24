@@ -1,8 +1,11 @@
 package service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +14,8 @@ import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 class DynamoServiceTest {
 
@@ -56,5 +61,79 @@ class DynamoServiceTest {
         PutItemRequest actual = captor.getValue();
 
         assertThat(actual.item()).isEqualTo(mockAttributeValueMap);
+    }
+
+    @Test
+    void listRequestHasCorrectTableNameWhenInvoked() {
+        // given
+        String keyConditionExpression = "my string";
+        Map<String, AttributeValue> expressionAttributeValues = mock(Map.class);
+
+        // when
+        sut.list(keyConditionExpression, expressionAttributeValues);
+
+        // then
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(mockClient, times(1)).query(captor.capture());
+        QueryRequest actual = captor.getValue();
+
+        assertThat(actual.tableName()).isEqualTo(tableName);
+    }
+
+    @Test
+    void listRequestHasCorrectKeyConditionExpressionWhenInvoked() {
+        // given
+        String keyConditionExpression = "my key";
+        Map<String, AttributeValue> expressionAttributeValues = mock(Map.class);
+
+        // when
+        sut.list(keyConditionExpression, expressionAttributeValues);
+
+        // then
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(mockClient, times(1)).query(captor.capture());
+        QueryRequest actual = captor.getValue();
+
+        assertThat(actual.keyConditionExpression()).isEqualTo(keyConditionExpression);
+    }
+
+    @Test
+    void listRequestHasCorrectExpressionAttributeValuesWhenInvoked() {
+        // given
+        String keyConditionExpression = "my key";
+        Map<String, AttributeValue> expressionAttributeValues = mock(Map.class);
+
+        // when
+        sut.list(keyConditionExpression, expressionAttributeValues);
+
+        // then
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(mockClient, times(1)).query(captor.capture());
+        QueryRequest actual = captor.getValue();
+
+        assertThat(actual.expressionAttributeValues()).isEqualTo(expressionAttributeValues);
+    }
+
+    @Test
+    void listRequestReturnsCorrectResponseWhenInvoked() {
+        // given
+        String keyConditionExpression = "my key";
+        Map<String, AttributeValue> expressionAttributeValues = mock(Map.class);
+
+        QueryRequest request =
+                QueryRequest.builder()
+                        .tableName(tableName)
+                        .keyConditionExpression(keyConditionExpression)
+                        .expressionAttributeValues(expressionAttributeValues)
+                        .build();
+
+        QueryResponse expected = QueryResponse.builder().build();
+        when(mockClient.query(eq(request))).thenReturn(expected);
+
+        // when
+        QueryResponse actual = sut.list(keyConditionExpression, expressionAttributeValues);
+
+        // then
+        assertThat(actual).isEqualTo(expected);
     }
 }

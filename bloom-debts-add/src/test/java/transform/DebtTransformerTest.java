@@ -63,9 +63,9 @@ class DebtTransformerTest {
     @Test
     void mapContainsRequiredAttributesWhenInvoked() {
         // given
-        when(adjustmentsTransformer.createAdjustmentsAttribute(any()))
+        when(adjustmentsTransformer.toAdjustmentsAttribute(any()))
                 .thenReturn(builder().l(List.of()).build());
-        when(oneTimePaymentsTransformer.createOneTimePaymentsAttribute(any()))
+        when(oneTimePaymentsTransformer.toOneTimePaymentsAttribute(any()))
                 .thenReturn(builder().l(List.of()).build());
         Debt debt = builder.build();
 
@@ -91,7 +91,7 @@ class DebtTransformerTest {
         List<Adjustment> adjustments = List.of(adjustment);
 
         AttributeValue expected = builder().build();
-        when(adjustmentsTransformer.createAdjustmentsAttribute(adjustments))
+        when(adjustmentsTransformer.toAdjustmentsAttribute(adjustments))
                 .thenReturn(builder().l(expected).build());
 
         Debt debt = builder.withAdjustments(adjustments).build();
@@ -100,7 +100,7 @@ class DebtTransformerTest {
         Map<String, AttributeValue> actual = sut.toAttributeMap(debt, mockSubject);
 
         // then
-        verify(adjustmentsTransformer).createAdjustmentsAttribute(adjustments);
+        verify(adjustmentsTransformer).toAdjustmentsAttribute(adjustments);
         assertThat(actual.get("Adjustments").l()).containsOnly(expected);
     }
 
@@ -112,7 +112,7 @@ class DebtTransformerTest {
         List<OneTimePayment> oneTimePayments = List.of(oneTimePayment);
 
         AttributeValue expected = builder().build();
-        when(oneTimePaymentsTransformer.createOneTimePaymentsAttribute(oneTimePayments))
+        when(oneTimePaymentsTransformer.toOneTimePaymentsAttribute(oneTimePayments))
                 .thenReturn(builder().l(expected).build());
 
         Debt debt = builder.withOneTimePayments(oneTimePayments).build();
@@ -121,7 +121,7 @@ class DebtTransformerTest {
         Map<String, AttributeValue> actual = sut.toAttributeMap(debt, mockSubject);
 
         // then
-        verify(oneTimePaymentsTransformer).createOneTimePaymentsAttribute(oneTimePayments);
+        verify(oneTimePaymentsTransformer).toOneTimePaymentsAttribute(oneTimePayments);
         assertThat(actual.get("OneTimePayments").l()).containsOnly(expected);
     }
 }
