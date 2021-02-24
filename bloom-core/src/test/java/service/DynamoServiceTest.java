@@ -3,7 +3,6 @@ package service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
@@ -74,7 +74,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
-        verify(mockClient, times(1)).query(captor.capture());
+        verify(mockClient).query(captor.capture());
         QueryRequest actual = captor.getValue();
 
         assertThat(actual.tableName()).isEqualTo(tableName);
@@ -91,7 +91,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
-        verify(mockClient, times(1)).query(captor.capture());
+        verify(mockClient).query(captor.capture());
         QueryRequest actual = captor.getValue();
 
         assertThat(actual.keyConditionExpression()).isEqualTo(keyConditionExpression);
@@ -108,7 +108,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
-        verify(mockClient, times(1)).query(captor.capture());
+        verify(mockClient).query(captor.capture());
         QueryRequest actual = captor.getValue();
 
         assertThat(actual.expressionAttributeValues()).isEqualTo(expressionAttributeValues);
@@ -135,5 +135,37 @@ class DynamoServiceTest {
 
         // then
         assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    void deleteRequestHasCorrectTableNameWhenInvoked() {
+        // given
+        Map key = mock(Map.class);
+
+        // when
+        sut.delete(key);
+
+        // then
+        ArgumentCaptor<DeleteItemRequest> captor = ArgumentCaptor.forClass(DeleteItemRequest.class);
+        verify(mockClient).deleteItem(captor.capture());
+        DeleteItemRequest actual = captor.getValue();
+
+        assertThat(actual.tableName()).isEqualTo(tableName);
+    }
+
+    @Test
+    void deleteRequestHasCorrectKeyWhenInvoked() {
+        // given
+        Map key = mock(Map.class);
+
+        // when
+        sut.delete(key);
+
+        // then
+        ArgumentCaptor<DeleteItemRequest> captor = ArgumentCaptor.forClass(DeleteItemRequest.class);
+        verify(mockClient).deleteItem(captor.capture());
+        DeleteItemRequest actual = captor.getValue();
+
+        assertThat(actual.key()).isEqualTo(key);
     }
 }
