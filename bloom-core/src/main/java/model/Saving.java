@@ -48,7 +48,7 @@ public class Saving {
         checkNull(builder.endDate, "endDate");
         checkNull(builder.yearlyRate, "yearlyRate");
 
-        if (1 != builder.startAmount.getAmount().compareTo(BigDecimal.ZERO)) {
+        if (0 > builder.startAmount.getAmount().compareTo(BigDecimal.ZERO)) {
             throw new IllegalArgumentException("startAmount cannot be negative");
         }
         if (builder.endDate.getDate().isBefore(builder.startDate.getDate())) {
