@@ -9,6 +9,8 @@ import model.OneTimePayment;
 
 public class RangeValidator {
 
+    private RangeValidator() {}
+
     public static void validateAdjustmentDates(
             YearMonth startDate,
             YearMonth endDate,

@@ -1,14 +1,22 @@
 package service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 class DynamoServiceTest {
 
@@ -175,7 +183,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
+        verify(mockClient).updateItem(captor.capture());
         UpdateItemRequest actual = captor.getValue();
 
         assertThat(actual.tableName()).isEqualTo(tableName);
@@ -194,7 +202,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
+        verify(mockClient).updateItem(captor.capture());
         UpdateItemRequest actual = captor.getValue();
 
         assertThat(actual.key()).isEqualTo(mockKey);
@@ -213,7 +221,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
+        verify(mockClient).updateItem(captor.capture());
         UpdateItemRequest actual = captor.getValue();
 
         assertThat(actual.updateExpression()).isEqualTo(updateExpression);
@@ -232,7 +240,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
+        verify(mockClient).updateItem(captor.capture());
         UpdateItemRequest actual = captor.getValue();
 
         assertThat(actual.expressionAttributeNames()).isEqualTo(mockExpressionAttributeNames);
@@ -251,7 +259,7 @@ class DynamoServiceTest {
 
         // then
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
+        verify(mockClient).updateItem(captor.capture());
         UpdateItemRequest actual = captor.getValue();
 
         assertThat(actual.expressionAttributeValues()).isEqualTo(mockAttributeValueMap);

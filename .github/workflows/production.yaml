@@ -26,12 +26,16 @@ jobs:
           echo "LAMBDA_SAVINGS_LIST_VERSION=$(./gradlew -q :bloom-savings-list:printVersion)" >> $GITHUB_ENV
           echo "LAMBDA_SAVINGS_UPDATE_VERSION=$(./gradlew -q :bloom-savings-update:printVersion)" >> $GITHUB_ENV
           echo "LAMBDA_SAVINGS_GET_VERSION=$(./gradlew -q :bloom-savings-get:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_DEBTS_ADD_VERSION=$(./gradlew -q :bloom-debts-add:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_DEBTS_DELETE_VERSION=$(./gradlew -q :bloom-debts-delete:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_DEBTS_LIST_VERSION=$(./gradlew -q :bloom-debts-list:printVersion)" >> $GITHUB_ENV
+          echo "LAMBDA_DEBTS_UPDATE_VERSION=$(./gradlew -q :bloom-debts-update:printVersion)" >> $GITHUB_ENV
       - name: Deploy to AWS CloudFormation
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: prod-bloom-services
           template: .cloudformation/stack.yaml
-          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }},LambdaSavingsAddVersion=${{ env.LAMBDA_SAVINGS_ADD_VERSION }},LambdaSavingsDeleteVersion=${{ env.LAMBDA_SAVINGS_DELETE_VERSION }},LambdaSavingsListVersion=${{ env.LAMBDA_SAVINGS_LIST_VERSION }},LambdaSavingsUpdateVersion=${{ env.LAMBDA_SAVINGS_UPDATE_VERSION }},LambdaSavingsGetVersion=${{ env.LAMBDA_SAVINGS_GET_VERSION }}'
+          parameter-overrides: 'Environment=prod,CertificateArn=${{ secrets.CERTIFICATE_ARN }},LambdaHealthVersion=${{ env.LAMBDA_HEALTH_VERSION }},LambdaSavingsAddVersion=${{ env.LAMBDA_SAVINGS_ADD_VERSION }},LambdaSavingsDeleteVersion=${{ env.LAMBDA_SAVINGS_DELETE_VERSION }},LambdaSavingsListVersion=${{ env.LAMBDA_SAVINGS_LIST_VERSION }},LambdaSavingsUpdateVersion=${{ env.LAMBDA_SAVINGS_UPDATE_VERSION }},LambdaSavingsGetVersion=${{ env.LAMBDA_SAVINGS_GET_VERSION }},LambdaDebtsAddVersion=${{ env.LAMBDA_DEBTS_ADD_VERSION }},LambdaDebtsDeleteVersion=${{ env.LAMBDA_DEBTS_DELETE_VERSION }},LambdaDebtsListVersion=${{ env.LAMBDA_DEBTS_LIST_VERSION }},LambdaDebtsUpdateVersion=${{ env.LAMBDA_DEBTS_UPDATE_VERSION }}'
           no-fail-on-empty-changeset: '1'
       - name: Deploy API Gateway
         run: aws apigateway create-deployment --rest-api-id 81htbu27v1 --stage-name prod

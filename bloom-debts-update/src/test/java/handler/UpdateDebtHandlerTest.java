@@ -1,10 +1,15 @@
 package handler;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import handler.UpdateDebtHandler.UpdateDebtHandlerDelegate;
 import java.util.Map;
-import model.*;
+import model.Debt;
+import model.Name;
+import model.RequestDetails;
+import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

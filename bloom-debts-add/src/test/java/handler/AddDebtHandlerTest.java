@@ -1,6 +1,6 @@
 package handler;
 
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 import handler.AddDebtHandler.AddDebtHandlerDelegate;
 import java.util.Map;
@@ -33,13 +33,12 @@ class AddDebtHandlerTest {
         mockSubject = Mockito.mock(Subject.class);
         mockDetails = Mockito.mock(RequestDetails.class);
 
-        Mockito.when(mockTransformer.toAttributeMap(mockDebt, mockSubject))
-                .thenReturn(mockAttributeMap);
-        Mockito.when(mockSubject.getSubject()).thenReturn("blah");
+        when(mockTransformer.toAttributeMap(mockDebt, mockSubject)).thenReturn(mockAttributeMap);
+        when(mockSubject.getSubject()).thenReturn("blah");
 
         Name mockName = Mockito.mock(Name.class);
-        Mockito.when(mockDebt.getName()).thenReturn(mockName);
-        Mockito.when(mockName.getName()).thenReturn("this is a name");
+        when(mockDebt.getName()).thenReturn(mockName);
+        when(mockName.getName()).thenReturn("this is a name");
     }
 
     @Test
@@ -88,7 +87,7 @@ class AddDebtHandlerTest {
         sut.handle(mockDebt, mockSubject, mockDetails);
 
         // then
-        Mockito.verify(mockLogger, times(1))
+        Mockito.verify(mockLogger)
                 .info(
                         "Debt {} added for subject {}",
                         mockDebt.getName().getName(),
