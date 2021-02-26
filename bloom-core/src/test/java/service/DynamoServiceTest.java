@@ -1,21 +1,14 @@
 package service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 class DynamoServiceTest {
 
@@ -167,5 +160,100 @@ class DynamoServiceTest {
         DeleteItemRequest actual = captor.getValue();
 
         assertThat(actual.key()).isEqualTo(key);
+    }
+
+    @Test
+    void updateRequestHasCorrectTableNameWhenInvoked() {
+        // given
+        Map<String, AttributeValue> mockKey = mock(Map.class);
+        String updateExpression = "my update expression";
+        Map<String, String> mockExpressionAttributeNames = mock(Map.class);
+        Map<String, AttributeValue> mockAttributeValueMap = mock(Map.class);
+
+        // when
+        sut.update(mockKey, updateExpression, mockExpressionAttributeNames, mockAttributeValueMap);
+
+        // then
+        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
+        verify(mockClient, times(1)).updateItem(captor.capture());
+        UpdateItemRequest actual = captor.getValue();
+
+        assertThat(actual.tableName()).isEqualTo(tableName);
+    }
+
+    @Test
+    void updateRequestHasCorrectKeyWhenInvoked() {
+        // given
+        Map<String, AttributeValue> mockKey = mock(Map.class);
+        String updateExpression = "my update expression";
+        Map<String, String> mockExpressionAttributeNames = mock(Map.class);
+        Map<String, AttributeValue> mockAttributeValueMap = mock(Map.class);
+
+        // when
+        sut.update(mockKey, updateExpression, mockExpressionAttributeNames, mockAttributeValueMap);
+
+        // then
+        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
+        verify(mockClient, times(1)).updateItem(captor.capture());
+        UpdateItemRequest actual = captor.getValue();
+
+        assertThat(actual.key()).isEqualTo(mockKey);
+    }
+
+    @Test
+    void updateRequestHasCorrectUpdateExpressionWhenInvoked() {
+        // given
+        Map<String, AttributeValue> mockKey = mock(Map.class);
+        String updateExpression = "my update expression";
+        Map<String, String> mockExpressionAttributeNames = mock(Map.class);
+        Map<String, AttributeValue> mockAttributeValueMap = mock(Map.class);
+
+        // when
+        sut.update(mockKey, updateExpression, mockExpressionAttributeNames, mockAttributeValueMap);
+
+        // then
+        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
+        verify(mockClient, times(1)).updateItem(captor.capture());
+        UpdateItemRequest actual = captor.getValue();
+
+        assertThat(actual.updateExpression()).isEqualTo(updateExpression);
+    }
+
+    @Test
+    void updateRequestHasCorrectExpressionAttributeNamesWhenInvoked() {
+        // given
+        Map<String, AttributeValue> mockKey = mock(Map.class);
+        String updateExpression = "my update expression";
+        Map<String, String> mockExpressionAttributeNames = mock(Map.class);
+        Map<String, AttributeValue> mockAttributeValueMap = mock(Map.class);
+
+        // when
+        sut.update(mockKey, updateExpression, mockExpressionAttributeNames, mockAttributeValueMap);
+
+        // then
+        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
+        verify(mockClient, times(1)).updateItem(captor.capture());
+        UpdateItemRequest actual = captor.getValue();
+
+        assertThat(actual.expressionAttributeNames()).isEqualTo(mockExpressionAttributeNames);
+    }
+
+    @Test
+    void updateRequestHasCorrectAttributeValueMapWhenInvoked() {
+        // given
+        Map<String, AttributeValue> mockKey = mock(Map.class);
+        String updateExpression = "my update expression";
+        Map<String, String> mockExpressionAttributeNames = mock(Map.class);
+        Map<String, AttributeValue> mockAttributeValueMap = mock(Map.class);
+
+        // when
+        sut.update(mockKey, updateExpression, mockExpressionAttributeNames, mockAttributeValueMap);
+
+        // then
+        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
+        verify(mockClient, times(1)).updateItem(captor.capture());
+        UpdateItemRequest actual = captor.getValue();
+
+        assertThat(actual.expressionAttributeValues()).isEqualTo(mockAttributeValueMap);
     }
 }
