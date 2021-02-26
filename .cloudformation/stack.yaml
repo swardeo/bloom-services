@@ -30,6 +30,18 @@ Parameters:
   LambdaSavingsGetVersion:
     Type: String
 
+  LambdaDebtsAddVersion:
+    Type: String
+
+  LambdaDebtsDeleteVersion:
+    Type: String
+
+  LambdaDebtsListVersion:
+    Type: String
+
+  LambdaDebtsUpdateVersion:
+    Type: String
+
 Conditions:
   IsProduction: !Equals [!Ref Environment, prod]
 
@@ -449,7 +461,7 @@ Resources:
             Action:
               - 'sts:AssumeRole'
 
-  LambdaSavingsUpdateGetPolicy:
+  LambdaSavingsGetPolicy:
     DependsOn: ['LambdaSavingsGet', 'ApiGatewayRole']
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -463,6 +475,198 @@ Resources:
           Action: 'lambda:InvokeFunction'
           Resource: !GetAtt LambdaSavingsGet.Arn
 
+  LambdaDebtsAdd:
+    DependsOn: LambdaDebtsAddRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-debts-add-${LambdaDebtsAddVersion}.zip'
+      Description: Bloom Debts Add Function
+      FunctionName: !Sub '${Environment}-bloom-debts-add'
+      Handler: handler.AddDebtHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaDebtsAddRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaDebtsAddVersion
+
+  LambdaDebtsAddRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaDebtsAddPolicy:
+    DependsOn: ['LambdaDebtsAdd', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: debts-add-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaDebtsAdd.Arn
+
+  LambdaDebtsDelete:
+    DependsOn: LambdaDebtsDeleteRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-debts-delete-${LambdaDebtsDeleteVersion}.zip'
+      Description: Bloom Debts Delete Function
+      FunctionName: !Sub '${Environment}-bloom-debts-delete'
+      Handler: handler.DeleteDebtHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaDebtsDeleteRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaDebtsDeleteVersion
+
+  LambdaDebtsDeleteRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaDebtsDeletePolicy:
+    DependsOn: ['LambdaDebtsDelete', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: debts-delete-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaDebtsDelete.Arn
+
+  LambdaDebtsList:
+    DependsOn: LambdaDebtsListRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-debts-list-${LambdaDebtsListVersion}.zip'
+      Description: Bloom Debts List Function
+      FunctionName: !Sub '${Environment}-bloom-debts-list'
+      Handler: handler.ListDebtsHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaDebtsListRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaDebtsListVersion
+
+  LambdaDebtsListRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaDebtsListPolicy:
+    DependsOn: ['LambdaDebtsList', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: debts-list-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaDebtsList.Arn
+
+  LambdaDebtsUpdate:
+    DependsOn: LambdaDebtsUpdateRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: bloom-services-artifacts
+        S3Key: !Sub 'bloom-debts-update-${LambdaDebtsUpdateVersion}.zip'
+      Description: Bloom Debts Update Function
+      FunctionName: !Sub '${Environment}-bloom-debts-update'
+      Handler: handler.UpdateDebtHandler::handleRequest
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
+      MemorySize: 512
+      Role: !GetAtt LambdaDebtsUpdateRole.Arn
+      Runtime: java11
+      Timeout: 15
+      Tags:
+        - Key: 'version'
+          Value: !Ref LambdaDebtsUpdateVersion
+
+  LambdaDebtsUpdateRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaDebtsUpdatePolicy:
+    DependsOn: ['LambdaDebtsUpdate', 'ApiGatewayRole']
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: debts-update-invoke-policy
+      Roles:
+        - !Ref ApiGatewayRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: 'Allow'
+          Action: 'lambda:InvokeFunction'
+          Resource: !GetAtt LambdaDebtsUpdate.Arn
+
   LambdaLoggingPolicy:
     DependsOn:
       [
@@ -472,6 +676,10 @@ Resources:
         'LambdaSavingsListRole',
         'LambdaSavingsUpdateRole',
         'LambdaSavingsGetRole',
+        'LambdaDebtsAddRole',
+        'LambdaDebtsDeleteRole',
+        'LambdaDebtsListRole',
+        'LambdaDebtsUpdateRole',
       ]
     Type: AWS::IAM::Policy
     Properties:
@@ -492,6 +700,10 @@ Resources:
         - !Ref LambdaSavingsListRole
         - !Ref LambdaSavingsUpdateRole
         - !Ref LambdaSavingsGetRole
+        - !Ref LambdaDebtsAddRole
+        - !Ref LambdaDebtsDeleteRole
+        - !Ref LambdaDebtsListRole
+        - !Ref LambdaDebtsUpdateRole
 
   UserTableReadPolicy:
     DependsOn:
@@ -500,6 +712,7 @@ Resources:
         'LambdaHealthRole',
         'LambdaSavingsListRole',
         'LambdaSavingsGetRole',
+        'LambdaDebtsListRole',
       ]
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -518,6 +731,7 @@ Resources:
         - !Ref LambdaHealthRole
         - !Ref LambdaSavingsListRole
         - !Ref LambdaSavingsGetRole
+        - !Ref LambdaDebtsListRole
 
   UserTableWritePolicy:
     DependsOn:
@@ -526,6 +740,9 @@ Resources:
         'LambdaSavingsAddRole',
         'LambdaSavingsDeleteRole',
         'LambdaSavingsUpdateRole',
+        'LambdaDebtsAddRole',
+        'LambdaDebtsDeleteRole',
+        'LambdaDebtsUpdateRole',
       ]
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -544,6 +761,9 @@ Resources:
         - !Ref LambdaSavingsAddRole
         - !Ref LambdaSavingsDeleteRole
         - !Ref LambdaSavingsUpdateRole
+        - !Ref LambdaDebtsAddRole
+        - !Ref LambdaDebtsDeleteRole
+        - !Ref LambdaDebtsUpdateRole
 
   ApiGatewayRole:
     Type: AWS::IAM::Role
@@ -593,6 +813,22 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref ResourceSavings
+      PathPart: '{name}'
+      RestApiId: !Ref ApiGateway
+
+  ResourceDebts:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: 'debts'
+      RestApiId: !Ref ApiGateway
+
+  ResourceDebtsName:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ResourceDebts
       PathPart: '{name}'
       RestApiId: !Ref ApiGateway
 
@@ -670,6 +906,66 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: false
             method.response.header.Access-Control-Allow-Origin: false
       ResourceId: !Ref ResourceSavingsName
+      RestApiId: !Ref ApiGateway
+
+  MethodDebtsOptions:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+      ResourceId: !Ref ResourceDebts
+      RestApiId: !Ref ApiGateway
+
+  MethodDebtsNameOptions:
+    DependsOn: ApiGateway
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        PassthroughBehavior: NEVER
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        Type: MOCK
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: 'Empty'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Origin: false
+      ResourceId: !Ref ResourceDebtsName
       RestApiId: !Ref ApiGateway
 
   MethodSavingsAdd:
@@ -772,6 +1068,74 @@ Resources:
       ResourceId: !Ref ResourceSavingsName
       RestApiId: !Ref ApiGateway
 
+  MethodDebtsAdd:
+    DependsOn:
+      ['ApiGateway', 'ResourceDebts', 'ApiGatewayRole', 'LambdaDebtsAdd']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaDebtsAdd.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceDebts
+      RestApiId: !Ref ApiGateway
+
+  MethodDebtsDelete:
+    DependsOn:
+      ['ApiGateway', 'ResourceDebtsName', 'ApiGatewayRole', 'LambdaDebtsDelete']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: DELETE
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaDebtsDelete.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceDebtsName
+      RestApiId: !Ref ApiGateway
+
+  MethodDebtsList:
+    DependsOn:
+      ['ApiGateway', 'ResourceDebts', 'ApiGatewayRole', 'LambdaDebtsList']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaDebtsList.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceDebts
+      RestApiId: !Ref ApiGateway
+
+  MethodDebtsUpdate:
+    DependsOn:
+      ['ApiGateway', 'ResourceDebtsName', 'ApiGatewayRole', 'LambdaDebtsUpdate']
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: PUT
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref Authorizer
+      Integration:
+        Credentials: !GetAtt ApiGatewayRole.Arn
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaDebtsUpdate.Arn}/invocations'
+        PassthroughBehavior: NEVER
+      ResourceId: !Ref ResourceDebtsName
+      RestApiId: !Ref ApiGateway
+
   DeployGateway:
     DependsOn:
       [
@@ -784,6 +1148,12 @@ Resources:
         'MethodSavingsUpdate',
         'MethodSavingsGet',
         'MethodSavingsNameOptions',
+        'MethodDebtsAdd',
+        'MethodDebtsOptions',
+        'MethodDebtsDelete',
+        'MethodDebtsList',
+        'MethodDebtsUpdate',
+        'MethodDebtsNameOptions',
       ]
     Type: AWS::ApiGateway::Deployment
     Properties:
