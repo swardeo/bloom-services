@@ -2,11 +2,7 @@ package service;
 
 import java.util.Map;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 public class DynamoService {
 
@@ -42,5 +38,22 @@ public class DynamoService {
                 DeleteItemRequest.builder().tableName(tableName).key(key).build();
 
         client.deleteItem(request);
+    }
+
+    public void update(
+            Map<String, AttributeValue> key,
+            String updateExpression,
+            Map<String, String> expressionAttributeNames,
+            Map<String, AttributeValue> attributeValueMap) {
+        UpdateItemRequest request =
+                UpdateItemRequest.builder()
+                        .tableName(tableName)
+                        .key(key)
+                        .updateExpression(updateExpression)
+                        .expressionAttributeNames(expressionAttributeNames)
+                        .expressionAttributeValues(attributeValueMap)
+                        .build();
+
+        client.updateItem(request);
     }
 }
