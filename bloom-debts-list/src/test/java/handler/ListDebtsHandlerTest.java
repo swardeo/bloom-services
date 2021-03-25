@@ -14,7 +14,6 @@ import model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import service.ListTypeService;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
@@ -22,42 +21,37 @@ import transform.DebtsDynamoTransformer;
 
 class ListDebtsHandlerTest {
 
+    ListDebtsHandlerDelegate sut;
+
     Subject mockSubject;
     RequestDetails mockDetails;
     DebtsDynamoTransformer mockTransformer;
     ListTypeService mockService;
     QueryResponse response;
     List mockDebtsList;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
-        mockSubject = Mockito.mock(Subject.class);
-        mockDetails = Mockito.mock(RequestDetails.class);
-        mockTransformer = Mockito.mock(DebtsDynamoTransformer.class);
-        mockService = Mockito.mock(ListTypeService.class);
-        response = QueryResponse.builder().build();
+        mockSubject = mock(Subject.class);
+        mockDetails = mock(RequestDetails.class);
+        mockTransformer = mock(DebtsDynamoTransformer.class);
+        mockService = mock(ListTypeService.class);
         mockDebtsList = mock(List.class);
+        mockLogger = mock(Logger.class);
+
+        response = QueryResponse.builder().build();
 
         when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
         when(mockService.list(mockSubject, Type.DEBT)).thenReturn(response);
         when(mockTransformer.toDebtsList(response)).thenReturn(mockDebtsList);
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        new ListDebtsHandlerDelegate(mockTransformer, mockService);
-
-        // then
-        // no exception
+        sut = new ListDebtsHandlerDelegate(mockTransformer, mockService, mockLogger);
     }
 
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
@@ -69,7 +63,6 @@ class ListDebtsHandlerTest {
     @Test
     void transformerInvokedForQueryResponseWhenDelegateHandled() {
         // given
-        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
@@ -85,7 +78,6 @@ class ListDebtsHandlerTest {
     @Test
     void returnsCorrectResponseWhenDelegateInvoked() {
         // given
-        ListDebtsHandlerDelegate sut = new ListDebtsHandlerDelegate(mockTransformer, mockService);
 
         // when
         List<Debt> actual = sut.handle(null, mockSubject, mockDetails);
@@ -97,9 +89,6 @@ class ListDebtsHandlerTest {
     @Test
     void logsWhenSavingsListReturned() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        ListDebtsHandlerDelegate sut =
-                new ListDebtsHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(null, mockSubject, mockDetails);

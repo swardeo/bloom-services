@@ -19,16 +19,17 @@ import transform.DebtTransformer;
 public class UpdateDebtHandler extends RequestStreamHandler<Debt, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final DebtTransformer DEBT_TRANSFORMER = new DebtTransformer();
+
     public static final UpdateDebtService UPDATE_SERVICE =
             new UpdateDebtService(new DynamoService(provideClient(), provideTableName()));
+
     public static final Logger LOGGER = getLogger(UpdateDebtHandler.class);
 
+    public static final UpdateDebtHandlerDelegate DELEGATE =
+            new UpdateDebtHandlerDelegate(new DebtTransformer(), UPDATE_SERVICE, LOGGER);
+
     public UpdateDebtHandler() {
-        super(
-                OBJECT_MAPPER,
-                new UpdateDebtHandlerDelegate(DEBT_TRANSFORMER, UPDATE_SERVICE, LOGGER),
-                Debt.class);
+        super(OBJECT_MAPPER, DELEGATE, Debt.class);
     }
 
     static class UpdateDebtHandlerDelegate implements Handler<Debt, Void> {

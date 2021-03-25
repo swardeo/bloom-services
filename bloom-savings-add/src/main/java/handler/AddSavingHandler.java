@@ -18,15 +18,17 @@ import transform.SavingTransformer;
 public class AddSavingHandler extends RequestStreamHandler<Saving, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final SavingTransformer SAVING_TRANSFORMER = new SavingTransformer();
+
     public static final DynamoService DYNAMO_SERVICE =
             new DynamoService(provideClient(), provideTableName());
 
+    public static final Logger LOGGER = getLogger(AddSavingHandler.class);
+
+    public static final AddSavingHandlerDelegate DELEGATE =
+            new AddSavingHandlerDelegate(new SavingTransformer(), DYNAMO_SERVICE, LOGGER);
+
     public AddSavingHandler() {
-        super(
-                OBJECT_MAPPER,
-                new AddSavingHandlerDelegate(SAVING_TRANSFORMER, DYNAMO_SERVICE),
-                Saving.class);
+        super(OBJECT_MAPPER, DELEGATE, Saving.class);
     }
 
     static class AddSavingHandlerDelegate implements Handler<Saving, Void> {
@@ -34,10 +36,6 @@ public class AddSavingHandler extends RequestStreamHandler<Saving, Void> {
         private final SavingTransformer transformer;
         private final DynamoService service;
         private final Logger logger;
-
-        AddSavingHandlerDelegate(SavingTransformer transformer, DynamoService service) {
-            this(transformer, service, getLogger(AddSavingHandler.class));
-        }
 
         AddSavingHandlerDelegate(
                 SavingTransformer transformer, DynamoService service, Logger logger) {

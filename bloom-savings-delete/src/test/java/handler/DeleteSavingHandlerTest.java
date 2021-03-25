@@ -17,10 +17,13 @@ import service.DeleteItemService;
 
 class DeleteSavingHandlerTest {
 
+    DeleteSavingHandlerDelegate sut;
+
     Subject mockSubject;
     RequestDetails mockDetails;
     NameRequest mockNameRequest;
     DeleteItemService mockService;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -28,25 +31,17 @@ class DeleteSavingHandlerTest {
         mockDetails = mock(RequestDetails.class);
         mockNameRequest = mock(NameRequest.class);
         mockService = mock(DeleteItemService.class);
+        mockLogger = mock(Logger.class);
 
         when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
         when(mockNameRequest.getName()).thenReturn("am item");
-    }
 
-    @Test
-    void delegateConstructsCorrectlyWhenInvoked() {
-        // given
-
-        // when
-        new DeleteSavingHandlerDelegate(mockService);
-
-        // then
+        sut = new DeleteSavingHandlerDelegate(mockService, mockLogger);
     }
 
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        DeleteSavingHandlerDelegate sut = new DeleteSavingHandlerDelegate(mockService);
 
         // when
         sut.handle(mockNameRequest, mockSubject, mockDetails);
@@ -58,8 +53,6 @@ class DeleteSavingHandlerTest {
     @Test
     void logsCorrectlyWhenSavingDeleted() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        DeleteSavingHandlerDelegate sut = new DeleteSavingHandlerDelegate(mockService, mockLogger);
 
         // when
         sut.handle(mockNameRequest, mockSubject, mockDetails);

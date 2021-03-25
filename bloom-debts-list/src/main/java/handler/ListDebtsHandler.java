@@ -20,15 +20,17 @@ import transform.DebtsDynamoTransformer;
 public class ListDebtsHandler extends RequestStreamHandler<Void, List<Debt>> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final DebtsDynamoTransformer DYNAMO_TRANSFORMER = new DebtsDynamoTransformer();
+
     public static final ListTypeService LIST_SERVICE =
             new ListTypeService(new DynamoService(provideClient(), provideTableName()));
 
+    public static final Logger LOGGER = getLogger(ListDebtsHandler.class);
+
+    public static final ListDebtsHandlerDelegate DELEGATE =
+            new ListDebtsHandlerDelegate(new DebtsDynamoTransformer(), LIST_SERVICE, LOGGER);
+
     public ListDebtsHandler() {
-        super(
-                OBJECT_MAPPER,
-                new ListDebtsHandlerDelegate(DYNAMO_TRANSFORMER, LIST_SERVICE),
-                Void.class);
+        super(OBJECT_MAPPER, DELEGATE, Void.class);
     }
 
     static class ListDebtsHandlerDelegate implements Handler<Void, List<Debt>> {
@@ -36,10 +38,6 @@ public class ListDebtsHandler extends RequestStreamHandler<Void, List<Debt>> {
         private final DebtsDynamoTransformer transformer;
         private final ListTypeService service;
         private final Logger logger;
-
-        ListDebtsHandlerDelegate(DebtsDynamoTransformer transformer, ListTypeService service) {
-            this(transformer, service, getLogger(ListDebtsHandler.class));
-        }
 
         ListDebtsHandlerDelegate(
                 DebtsDynamoTransformer transformer, ListTypeService service, Logger logger) {

@@ -17,6 +17,7 @@ import service.UpdateDebtService;
 import transform.DebtTransformer;
 
 class UpdateDebtHandlerTest {
+    UpdateDebtHandlerDelegate sut;
 
     Subject mockSubject;
     RequestDetails mockDetails;
@@ -25,6 +26,7 @@ class UpdateDebtHandlerTest {
     Debt mockDebt;
     Map mockKey;
     Map mockAttributeMap;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -33,6 +35,7 @@ class UpdateDebtHandlerTest {
         mockTransformer = mock(DebtTransformer.class);
         mockService = mock(UpdateDebtService.class);
         mockDebt = mock(Debt.class);
+        mockLogger = mock(Logger.class);
 
         Name mockName = mock(Name.class);
         when(mockDebt.getName()).thenReturn(mockName);
@@ -41,27 +44,13 @@ class UpdateDebtHandlerTest {
 
         when(mockTransformer.toKey(mockDebt.getName(), mockSubject)).thenReturn(mockKey);
         when(mockTransformer.toAttributeMap(mockDebt)).thenReturn(mockAttributeMap);
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        Logger mockLogger = mock(Logger.class);
-        UpdateDebtHandlerDelegate sut =
-                new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
-
-        // then
-        // no exception
+        sut = new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
     }
 
     @Test
     void transformerInvokedForKeyWhenDelegateHandled() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        UpdateDebtHandlerDelegate sut =
-                new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockDebt, mockSubject, mockDetails);
@@ -73,9 +62,6 @@ class UpdateDebtHandlerTest {
     @Test
     void transformerInvokedForAttributeValueMapWhenDelegateHandled() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        UpdateDebtHandlerDelegate sut =
-                new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockDebt, mockSubject, mockDetails);
@@ -87,9 +73,6 @@ class UpdateDebtHandlerTest {
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        UpdateDebtHandlerDelegate sut =
-                new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockDebt, mockSubject, mockDetails);
@@ -101,9 +84,6 @@ class UpdateDebtHandlerTest {
     @Test
     void logsWhenDebtUpdated() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        UpdateDebtHandlerDelegate sut =
-                new UpdateDebtHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockDebt, mockSubject, mockDetails);
