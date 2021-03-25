@@ -18,15 +18,17 @@ import transform.DebtTransformer;
 public class AddDebtHandler extends RequestStreamHandler<Debt, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final DebtTransformer DEBT_TRANSFORMER = new DebtTransformer();
+
     public static final DynamoService DYNAMO_SERVICE =
             new DynamoService(provideClient(), provideTableName());
 
+    public static final Logger LOGGER = getLogger(AddDebtHandler.class);
+
+    public static final AddDebtHandlerDelegate DELEGATE =
+            new AddDebtHandlerDelegate(new DebtTransformer(), DYNAMO_SERVICE, LOGGER);
+
     public AddDebtHandler() {
-        super(
-                OBJECT_MAPPER,
-                new AddDebtHandlerDelegate(DEBT_TRANSFORMER, DYNAMO_SERVICE),
-                Debt.class);
+        super(OBJECT_MAPPER, DELEGATE, Debt.class);
     }
 
     static class AddDebtHandlerDelegate implements Handler<Debt, Void> {
@@ -34,10 +36,6 @@ public class AddDebtHandler extends RequestStreamHandler<Debt, Void> {
         private final DebtTransformer transformer;
         private final DynamoService service;
         private final Logger logger;
-
-        AddDebtHandlerDelegate(DebtTransformer transformer, DynamoService service) {
-            this(transformer, service, getLogger(AddDebtHandler.class));
-        }
 
         AddDebtHandlerDelegate(DebtTransformer transformer, DynamoService service, Logger logger) {
             this.transformer = transformer;

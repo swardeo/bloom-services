@@ -18,6 +18,8 @@ import transform.SavingTransformer;
 
 class UpdateSavingHandlerTest {
 
+    UpdateSavingHandlerDelegate sut;
+
     Subject mockSubject;
     RequestDetails mockDetails;
     SavingTransformer mockTransformer;
@@ -25,6 +27,7 @@ class UpdateSavingHandlerTest {
     Saving mockSaving;
     Map mockKey;
     Map mockAttributeMap;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -35,6 +38,7 @@ class UpdateSavingHandlerTest {
         mockSaving = mock(Saving.class);
         mockKey = mock(Map.class);
         mockAttributeMap = mock(Map.class);
+        mockLogger = mock(Logger.class);
 
         Name mockName = mock(Name.class);
         when(mockSaving.getName()).thenReturn(mockName);
@@ -43,24 +47,13 @@ class UpdateSavingHandlerTest {
 
         when(mockTransformer.toKey(mockSaving.getName(), mockSubject)).thenReturn(mockKey);
         when(mockTransformer.toAttributeMap(mockSaving)).thenReturn(mockAttributeMap);
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        new UpdateSavingHandlerDelegate(mockTransformer, mockService);
-
-        // then
-        // no exception
+        sut = new UpdateSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
     }
 
     @Test
     void transformerInvokedForKeyMapWhenDelegateHandled() {
         // given
-        UpdateSavingHandlerDelegate sut =
-                new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);
@@ -72,8 +65,6 @@ class UpdateSavingHandlerTest {
     @Test
     void transformerInvokedForAttributeMapWhenDelegateHandled() {
         // given
-        UpdateSavingHandlerDelegate sut =
-                new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);
@@ -85,8 +76,6 @@ class UpdateSavingHandlerTest {
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        UpdateSavingHandlerDelegate sut =
-                new UpdateSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);
@@ -98,9 +87,6 @@ class UpdateSavingHandlerTest {
     @Test
     void logsWhenSavingUpdated() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        UpdateSavingHandlerDelegate sut =
-                new UpdateSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);

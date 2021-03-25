@@ -18,12 +18,15 @@ import transform.SavingTransformer;
 
 class AddSavingHandlerTest {
 
+    AddSavingHandlerDelegate sut;
+
     SavingTransformer mockTransformer;
     DynamoService mockService;
     Saving mockSaving;
     Map mockAttributeMap;
     Subject mockSubject;
     RequestDetails mockDetails;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -33,6 +36,7 @@ class AddSavingHandlerTest {
         mockAttributeMap = mock(Map.class);
         mockSubject = mock(Subject.class);
         mockDetails = mock(RequestDetails.class);
+        mockLogger = mock(Logger.class);
 
         when(mockTransformer.toAttributeMap(mockSaving, mockSubject)).thenReturn(mockAttributeMap);
 
@@ -41,23 +45,13 @@ class AddSavingHandlerTest {
         Name mockName = mock(Name.class);
         when(mockSaving.getName()).thenReturn(mockName);
         when(mockName.getName()).thenReturn("this is a name");
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        new AddSavingHandlerDelegate(mockTransformer, mockService);
-
-        // then
-        // no exception
+        sut = new AddSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
     }
 
     @Test
     void transformerInvokedWhenDelegateHandled() {
         // given
-        AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);
@@ -69,7 +63,6 @@ class AddSavingHandlerTest {
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        AddSavingHandlerDelegate sut = new AddSavingHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);
@@ -81,9 +74,6 @@ class AddSavingHandlerTest {
     @Test
     void logsWhenSavingAdded() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        AddSavingHandlerDelegate sut =
-                new AddSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(mockSaving, mockSubject, mockDetails);

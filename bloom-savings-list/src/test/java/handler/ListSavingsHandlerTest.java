@@ -22,12 +22,15 @@ import transform.SavingsDynamoTransformer;
 
 class ListSavingsHandlerTest {
 
+    ListSavingsHandlerDelegate sut;
+
     Subject mockSubject;
     RequestDetails mockDetails;
     SavingsDynamoTransformer mockTransformer;
     ListTypeService mockService;
     QueryResponse response;
     List mockSavingsList;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -37,28 +40,18 @@ class ListSavingsHandlerTest {
         mockService = mock(ListTypeService.class);
         response = QueryResponse.builder().build();
         mockSavingsList = mock(List.class);
+        mockLogger = mock(Logger.class);
 
         when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
         when(mockService.list(mockSubject, Type.SAVING)).thenReturn(response);
         when(mockTransformer.toSavingsList(response)).thenReturn(mockSavingsList);
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        new ListSavingsHandlerDelegate(mockTransformer, mockService);
-
-        // then
-        // no exception
+        sut = new ListSavingsHandlerDelegate(mockTransformer, mockService, mockLogger);
     }
 
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
@@ -70,8 +63,6 @@ class ListSavingsHandlerTest {
     @Test
     void transformerInvokedForAttributeMapWhenDelegateHandled() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
@@ -87,8 +78,6 @@ class ListSavingsHandlerTest {
     @Test
     void returnsCorrectResponseWhenDelegateInvoked() {
         // given
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService);
 
         // when
         List<Saving> actual = sut.handle(null, mockSubject, mockDetails);
@@ -100,9 +89,6 @@ class ListSavingsHandlerTest {
     @Test
     void logsWhenSavingsListReturned() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        ListSavingsHandlerDelegate sut =
-                new ListSavingsHandlerDelegate(mockTransformer, mockService, mockLogger);
 
         // when
         sut.handle(null, mockSubject, mockDetails);

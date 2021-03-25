@@ -17,21 +17,23 @@ import service.DynamoService;
 public class DeleteSavingHandler extends RequestStreamHandler<NameRequest, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
+
     public static final DeleteItemService DELETE_SERVICE =
             new DeleteItemService(new DynamoService(provideClient(), provideTableName()));
 
+    public static final Logger LOGGER = getLogger(DeleteSavingHandler.class);
+
+    public static final DeleteSavingHandlerDelegate DELEGATE =
+            new DeleteSavingHandlerDelegate(DELETE_SERVICE, LOGGER);
+
     public DeleteSavingHandler() {
-        super(OBJECT_MAPPER, new DeleteSavingHandlerDelegate(DELETE_SERVICE), NameRequest.class);
+        super(OBJECT_MAPPER, DELEGATE, NameRequest.class);
     }
 
     static class DeleteSavingHandlerDelegate implements Handler<NameRequest, Void> {
 
         private final DeleteItemService service;
         private final Logger logger;
-
-        DeleteSavingHandlerDelegate(DeleteItemService service) {
-            this(service, getLogger(DeleteSavingHandler.class));
-        }
 
         DeleteSavingHandlerDelegate(DeleteItemService service, Logger logger) {
             this.service = service;

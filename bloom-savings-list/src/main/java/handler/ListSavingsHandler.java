@@ -20,16 +20,17 @@ import transform.SavingsDynamoTransformer;
 public class ListSavingsHandler extends RequestStreamHandler<Void, List<Saving>> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final SavingsDynamoTransformer DYNAMO_TRANSFORMER =
-            new SavingsDynamoTransformer();
+
     public static final ListTypeService LIST_SERVICE =
             new ListTypeService(new DynamoService(provideClient(), provideTableName()));
 
+    public static final Logger LOGGER = getLogger(ListSavingsHandler.class);
+
+    public static final ListSavingsHandlerDelegate DELEGATE =
+            new ListSavingsHandlerDelegate(new SavingsDynamoTransformer(), LIST_SERVICE, LOGGER);
+
     public ListSavingsHandler() {
-        super(
-                OBJECT_MAPPER,
-                new ListSavingsHandlerDelegate(DYNAMO_TRANSFORMER, LIST_SERVICE),
-                Void.class);
+        super(OBJECT_MAPPER, DELEGATE, Void.class);
     }
 
     static class ListSavingsHandlerDelegate implements Handler<Void, List<Saving>> {
@@ -37,10 +38,6 @@ public class ListSavingsHandler extends RequestStreamHandler<Void, List<Saving>>
         private final SavingsDynamoTransformer transformer;
         private final ListTypeService service;
         private final Logger logger;
-
-        ListSavingsHandlerDelegate(SavingsDynamoTransformer transformer, ListTypeService service) {
-            this(transformer, service, getLogger(ListSavingsHandlerDelegate.class));
-        }
 
         ListSavingsHandlerDelegate(
                 SavingsDynamoTransformer transformer, ListTypeService service, Logger logger) {

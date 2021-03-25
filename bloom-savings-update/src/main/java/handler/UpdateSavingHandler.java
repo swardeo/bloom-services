@@ -19,15 +19,17 @@ import transform.SavingTransformer;
 public class UpdateSavingHandler extends RequestStreamHandler<Saving, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final SavingTransformer SAVING_TRANSFORMER = new SavingTransformer();
+
     public static final UpdateSavingService UPDATE_SAVING_SERVICE =
             new UpdateSavingService(new DynamoService(provideClient(), provideTableName()));
 
+    public static final Logger LOGGER = getLogger(UpdateSavingHandler.class);
+
+    public static final UpdateSavingHandlerDelegate DELEGATE =
+            new UpdateSavingHandlerDelegate(new SavingTransformer(), UPDATE_SAVING_SERVICE, LOGGER);
+
     public UpdateSavingHandler() {
-        super(
-                OBJECT_MAPPER,
-                new UpdateSavingHandlerDelegate(SAVING_TRANSFORMER, UPDATE_SAVING_SERVICE),
-                Saving.class);
+        super(OBJECT_MAPPER, DELEGATE, Saving.class);
     }
 
     static class UpdateSavingHandlerDelegate implements Handler<Saving, Void> {
@@ -35,10 +37,6 @@ public class UpdateSavingHandler extends RequestStreamHandler<Saving, Void> {
         private final SavingTransformer transformer;
         private final UpdateSavingService service;
         private final Logger logger;
-
-        UpdateSavingHandlerDelegate(SavingTransformer transformer, UpdateSavingService service) {
-            this(transformer, service, getLogger(UpdateSavingHandler.class));
-        }
 
         UpdateSavingHandlerDelegate(
                 SavingTransformer transformer, UpdateSavingService service, Logger logger) {

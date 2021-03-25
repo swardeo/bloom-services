@@ -2,7 +2,6 @@ package handler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,10 +20,13 @@ import software.amazon.awssdk.services.dynamodb.model.TableStatus;
 
 class HealthHandlerTest {
 
+    HealthHandlerDelegate sut;
+
     DynamoDbClient mockClient;
     String tableName;
     Subject mockSubject;
     RequestDetails mockDetails;
+    Logger mockLogger;
 
     @BeforeEach
     void beforeEach() {
@@ -32,42 +34,31 @@ class HealthHandlerTest {
         tableName = "mockTable";
         mockSubject = mock(Subject.class);
         mockDetails = mock(RequestDetails.class);
+        mockLogger = mock(Logger.class);
 
         TableDescription table = TableDescription.builder().tableStatus(TableStatus.ACTIVE).build();
         DescribeTableResponse tableResponse = DescribeTableResponse.builder().table(table).build();
         when(mockClient.describeTable(DescribeTableRequest.builder().tableName(tableName).build()))
                 .thenReturn(tableResponse);
-    }
 
-    @Test
-    void delegateAcceptsCorrectParametersWhenConstructed() {
-        // given
-
-        // when
-        new HealthHandlerDelegate(mockClient, tableName);
-
-        // then
-        // no exception
+        sut = new HealthHandlerDelegate(mockClient, tableName, mockLogger);
     }
 
     @Test
     void clientInvokedCorrectlyWhenDelegateHandled() {
         // given
-        HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName);
 
         // when
         sut.handle(null, mockSubject, mockDetails);
 
         // then
-        verify(mockClient, times(1))
+        verify(mockClient)
                 .describeTable(DescribeTableRequest.builder().tableName(tableName).build());
     }
 
     @Test
     void clientReturnsHealthyWhenTableActive() {
         // given
-        HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName);
-
         HealthResponse expected = HealthResponse.HEALTHY;
 
         // when
@@ -80,8 +71,6 @@ class HealthHandlerTest {
     @Test
     void clientReturnsUnhealthyWhenTableNotActive() {
         // given
-        HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName);
-
         TableDescription table =
                 TableDescription.builder().tableStatus(TableStatus.ARCHIVED).build();
         DescribeTableResponse tableResponse = DescribeTableResponse.builder().table(table).build();
@@ -100,9 +89,6 @@ class HealthHandlerTest {
     @Test
     void logsWhenTableNotActive() {
         // given
-        Logger mockLogger = mock(Logger.class);
-        HealthHandlerDelegate sut = new HealthHandlerDelegate(mockClient, tableName, mockLogger);
-
         TableDescription table =
                 TableDescription.builder().tableStatus(TableStatus.ARCHIVED).build();
         DescribeTableResponse tableResponse = DescribeTableResponse.builder().table(table).build();
@@ -110,9 +96,9 @@ class HealthHandlerTest {
                 .thenReturn(tableResponse);
 
         // when
-        HealthResponse actual = sut.handle(null, mockSubject, mockDetails);
+        sut.handle(null, mockSubject, mockDetails);
 
         // then
-        verify(mockLogger, times(1)).info("Table {} is not active", tableName);
+        verify(mockLogger).error("Table {} is not active", tableName);
     }
 }
