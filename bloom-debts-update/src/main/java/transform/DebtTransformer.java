@@ -32,19 +32,19 @@ public class DebtTransformer {
     }
 
     public Map<String, AttributeValue> toAttributeMap(Debt debt) {
-        Map<String, AttributeValue> savingItem = new HashMap<>();
+        Map<String, AttributeValue> debtItem = new HashMap<>();
 
-        savingItem.put(":startAmount", builder().s(debt.getStartAmount().toString()).build());
-        savingItem.put(":monthlyAmount", builder().s(debt.getMonthlyAmount().toString()).build());
-        savingItem.put(":startDate", builder().s(debt.getStartDate().toString()).build());
-        savingItem.put(":yearlyRate", builder().s(debt.getYearlyRate().toString()).build());
-        savingItem.put(
+        debtItem.put(":startAmount", builder().s(debt.getStartAmount().toString()).build());
+        debtItem.put(":monthlyAmount", builder().s(debt.getMonthlyAmount().toString()).build());
+        debtItem.put(":startDate", builder().s(debt.getStartDate().toString()).build());
+        debtItem.put(":yearlyRate", builder().s(debt.getYearlyRate().toString()).build());
+        debtItem.put(
                 ":adjustments",
                 adjustmentsTransformer.toAdjustmentsAttribute(debt.getAdjustments()));
-        savingItem.put(
+        debtItem.put(
                 ":oneTimePayments",
                 oneTimePaymentsTransformer.toOneTimePaymentsAttribute(debt.getOneTimePayments()));
 
-        return savingItem;
+        return debtItem;
     }
 }

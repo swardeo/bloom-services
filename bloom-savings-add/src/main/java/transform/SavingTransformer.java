@@ -2,19 +2,27 @@ package transform;
 
 import static software.amazon.awssdk.services.dynamodb.model.AttributeValue.builder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import model.Adjustment;
-import model.OneTimePayment;
 import model.Saving;
 import model.Subject;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 public class SavingTransformer {
 
-    public SavingTransformer() {}
+    private final AdjustmentsTransformer adjustmentsTransformer;
+    private final OneTimePaymentsTransformer oneTimePaymentsTransformer;
+
+    public SavingTransformer() {
+        this(new AdjustmentsTransformer(), new OneTimePaymentsTransformer());
+    }
+
+    SavingTransformer(
+            AdjustmentsTransformer adjustmentsTransformer,
+            OneTimePaymentsTransformer oneTimePaymentsTransformer) {
+        this.adjustmentsTransformer = adjustmentsTransformer;
+        this.oneTimePaymentsTransformer = oneTimePaymentsTransformer;
+    }
 
     public Map<String, AttributeValue> toAttributeMap(Saving saving, Subject subject) {
         Map<String, AttributeValue> savingItem = new HashMap<>();
@@ -26,37 +34,13 @@ public class SavingTransformer {
         savingItem.put("StartDate", builder().s(saving.getStartDate().toString()).build());
         savingItem.put("EndDate", builder().s(saving.getEndDate().toString()).build());
         savingItem.put("YearlyRate", builder().s(saving.getYearlyRate().toString()).build());
-        savingItem.put("Adjustments", createAdjustmentsAttribute(saving.getAdjustments()));
         savingItem.put(
-                "OneTimePayments", createOneTimePaymentsAttribute(saving.getOneTimePayments()));
+                "Adjustments",
+                adjustmentsTransformer.toAdjustmentsAttribute(saving.getAdjustments()));
+        savingItem.put(
+                "OneTimePayments",
+                oneTimePaymentsTransformer.toOneTimePaymentsAttribute(saving.getOneTimePayments()));
 
         return savingItem;
-    }
-
-    private static AttributeValue createAdjustmentsAttribute(List<Adjustment> adjustments) {
-        List<AttributeValue> attributeList = new ArrayList<>();
-        for (Adjustment adjustment : adjustments) {
-            Map<String, AttributeValue> attribute =
-                    Map.of(
-                            "Amount", builder().s(adjustment.getAmount().toString()).build(),
-                            "DateFrom", builder().s(adjustment.getDateFrom().toString()).build(),
-                            "Rate", builder().s(adjustment.getRate().toString()).build());
-
-            attributeList.add(builder().m(attribute).build());
-        }
-        return builder().l(attributeList).build();
-    }
-
-    private static AttributeValue createOneTimePaymentsAttribute(
-            List<OneTimePayment> oneTimePayments) {
-        List<AttributeValue> attributeList = new ArrayList<>();
-        for (OneTimePayment oneTimePayment : oneTimePayments) {
-            Map<String, AttributeValue> attribute =
-                    Map.of(
-                            "Amount", builder().s(oneTimePayment.getAmount().toString()).build(),
-                            "Date", builder().s(oneTimePayment.getDate().toString()).build());
-            attributeList.add(builder().m(attribute).build());
-        }
-        return builder().l(attributeList).build();
     }
 }

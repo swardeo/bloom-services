@@ -18,6 +18,8 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 class SavingsDynamoTransformerTest {
 
+    AdjustmentsTransformer adjustmentsTransformer;
+    OneTimePaymentsTransformer oneTimePaymentsTransformer;
     SavingsDynamoTransformer sut;
 
     Name name;
@@ -36,7 +38,9 @@ class SavingsDynamoTransformerTest {
 
     @BeforeEach
     void beforeEach() {
-        sut = new SavingsDynamoTransformer();
+        adjustmentsTransformer = new AdjustmentsTransformer();
+        oneTimePaymentsTransformer = new OneTimePaymentsTransformer();
+        sut = new SavingsDynamoTransformer(adjustmentsTransformer, oneTimePaymentsTransformer);
 
         name = new Name("MySaving");
         startAmount = new Amount("206.78");

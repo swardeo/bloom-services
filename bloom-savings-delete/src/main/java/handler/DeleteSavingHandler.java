@@ -6,55 +6,41 @@ import static provider.DynamoProvider.provideTableName;
 import static provider.MapperProvider.provideMapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Map;
 import model.RequestDetails;
 import model.Subject;
+import model.Type;
 import model.request.NameRequest;
 import org.slf4j.Logger;
-import service.DeleteSavingService;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import transform.NameRequestTransformer;
+import service.DeleteItemService;
+import service.DynamoService;
 
 public class DeleteSavingHandler extends RequestStreamHandler<NameRequest, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final DynamoDbClient DYNAMO_DB_CLIENT = provideClient();
-    public static final String TABLE_NAME = provideTableName();
-    public static final NameRequestTransformer SAVING_NAME_TRANSFORMER =
-            new NameRequestTransformer();
-    public static final DeleteSavingService DELETE_SAVING_SERVICE =
-            new DeleteSavingService(DYNAMO_DB_CLIENT, TABLE_NAME);
+    public static final DeleteItemService DELETE_SERVICE =
+            new DeleteItemService(new DynamoService(provideClient(), provideTableName()));
 
     public DeleteSavingHandler() {
-        super(
-                OBJECT_MAPPER,
-                new DeleteSavingHandlerDelegate(SAVING_NAME_TRANSFORMER, DELETE_SAVING_SERVICE),
-                NameRequest.class);
+        super(OBJECT_MAPPER, new DeleteSavingHandlerDelegate(DELETE_SERVICE), NameRequest.class);
     }
 
     static class DeleteSavingHandlerDelegate implements Handler<NameRequest, Void> {
 
-        private final NameRequestTransformer transformer;
-        private final DeleteSavingService service;
+        private final DeleteItemService service;
         private final Logger logger;
 
-        DeleteSavingHandlerDelegate(
-                NameRequestTransformer transformer, DeleteSavingService service) {
-            this(transformer, service, getLogger(DeleteSavingHandler.class));
+        DeleteSavingHandlerDelegate(DeleteItemService service) {
+            this(service, getLogger(DeleteSavingHandler.class));
         }
 
-        DeleteSavingHandlerDelegate(
-                NameRequestTransformer transformer, DeleteSavingService service, Logger logger) {
-            this.transformer = transformer;
+        DeleteSavingHandlerDelegate(DeleteItemService service, Logger logger) {
             this.service = service;
             this.logger = logger;
         }
 
         @Override
         public Void handle(NameRequest request, Subject subject, RequestDetails details) {
-            Map<String, AttributeValue> key = transformer.toKey(request, subject);
-            service.deleteSaving(key);
+            service.delete(subject, Type.SAVING, request);
             logger.info(
                     "Saving {} deleted for subject {}", request.getName(), subject.getSubject());
             return null;

@@ -11,11 +11,12 @@ import java.util.List;
 import model.RequestDetails;
 import model.Saving;
 import model.Subject;
+import model.Type;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
-import service.ListSavingsService;
+import service.ListTypeService;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import transform.SavingsDynamoTransformer;
 
@@ -24,7 +25,7 @@ class ListSavingsHandlerTest {
     Subject mockSubject;
     RequestDetails mockDetails;
     SavingsDynamoTransformer mockTransformer;
-    ListSavingsService mockService;
+    ListTypeService mockService;
     QueryResponse response;
     List mockSavingsList;
 
@@ -33,12 +34,12 @@ class ListSavingsHandlerTest {
         mockSubject = mock(Subject.class);
         mockDetails = mock(RequestDetails.class);
         mockTransformer = mock(SavingsDynamoTransformer.class);
-        mockService = mock(ListSavingsService.class);
+        mockService = mock(ListTypeService.class);
         response = QueryResponse.builder().build();
         mockSavingsList = mock(List.class);
 
         when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
-        when(mockService.listSavings(mockSubject)).thenReturn(response);
+        when(mockService.list(mockSubject, Type.SAVING)).thenReturn(response);
         when(mockTransformer.toSavingsList(response)).thenReturn(mockSavingsList);
     }
 
@@ -63,7 +64,7 @@ class ListSavingsHandlerTest {
         sut.handle(null, mockSubject, mockDetails);
 
         // then
-        verify(mockService, times(1)).listSavings(mockSubject);
+        verify(mockService).list(mockSubject, Type.SAVING);
     }
 
     @Test

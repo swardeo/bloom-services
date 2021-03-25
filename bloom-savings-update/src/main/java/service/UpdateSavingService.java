@@ -1,18 +1,14 @@
 package service;
 
 import java.util.Map;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 public class UpdateSavingService {
 
-    private final DynamoDbClient client;
-    private final String tableName;
+    private final DynamoService service;
 
-    public UpdateSavingService(DynamoDbClient client, String tableName) {
-        this.client = client;
-        this.tableName = tableName;
+    public UpdateSavingService(DynamoService service) {
+        this.service = service;
     }
 
     public void updateSaving(
@@ -30,15 +26,6 @@ public class UpdateSavingService {
                         "#f", "Adjustments",
                         "#g", "OneTimePayments");
 
-        UpdateItemRequest request =
-                UpdateItemRequest.builder()
-                        .tableName(tableName)
-                        .key(key)
-                        .updateExpression(updateExpression)
-                        .expressionAttributeNames(expressionAttributeNames)
-                        .expressionAttributeValues(attributeValueMap)
-                        .build();
-
-        client.updateItem(request);
+        service.update(key, updateExpression, expressionAttributeNames, attributeValueMap);
     }
 }

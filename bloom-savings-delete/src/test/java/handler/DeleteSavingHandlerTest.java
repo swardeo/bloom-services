@@ -6,38 +6,31 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import handler.DeleteSavingHandler.DeleteSavingHandlerDelegate;
-import java.util.Map;
 import model.RequestDetails;
 import model.Subject;
+import model.Type;
 import model.request.NameRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
-import service.DeleteSavingService;
-import transform.NameRequestTransformer;
+import service.DeleteItemService;
 
 class DeleteSavingHandlerTest {
 
     Subject mockSubject;
     RequestDetails mockDetails;
-    NameRequestTransformer mockTransformer;
-    DeleteSavingService mockService;
     NameRequest mockNameRequest;
-    Map mockKey;
+    DeleteItemService mockService;
 
     @BeforeEach
     void beforeEach() {
         mockSubject = mock(Subject.class);
         mockDetails = mock(RequestDetails.class);
-        mockTransformer = mock(NameRequestTransformer.class);
-        mockService = mock(DeleteSavingService.class);
         mockNameRequest = mock(NameRequest.class);
-        mockKey = mock(Map.class);
+        mockService = mock(DeleteItemService.class);
 
-        when(mockNameRequest.getName()).thenReturn("hello");
-        when(mockSubject.getSubject()).thenReturn("jsdfds-32423-dsf");
-
-        when(mockTransformer.toKey(mockNameRequest, mockSubject)).thenReturn(mockKey);
+        when(mockSubject.getSubject()).thenReturn("hsdf-324jds3");
+        when(mockNameRequest.getName()).thenReturn("am item");
     }
 
     @Test
@@ -45,43 +38,28 @@ class DeleteSavingHandlerTest {
         // given
 
         // when
-        new DeleteSavingHandlerDelegate(mockTransformer, mockService);
+        new DeleteSavingHandlerDelegate(mockService);
 
         // then
-    }
-
-    @Test
-    void transformerInvokedWhenDelegateHandled() {
-        // given
-        DeleteSavingHandlerDelegate sut =
-                new DeleteSavingHandlerDelegate(mockTransformer, mockService);
-
-        // when
-        sut.handle(mockNameRequest, mockSubject, mockDetails);
-
-        // then
-        verify(mockTransformer, times(1)).toKey(mockNameRequest, mockSubject);
     }
 
     @Test
     void serviceInvokedWhenDelegateHandled() {
         // given
-        DeleteSavingHandlerDelegate sut =
-                new DeleteSavingHandlerDelegate(mockTransformer, mockService);
+        DeleteSavingHandlerDelegate sut = new DeleteSavingHandlerDelegate(mockService);
 
         // when
         sut.handle(mockNameRequest, mockSubject, mockDetails);
 
         // then
-        verify(mockService, times(1)).deleteSaving(mockKey);
+        verify(mockService).delete(mockSubject, Type.SAVING, mockNameRequest);
     }
 
     @Test
     void logsCorrectlyWhenSavingDeleted() {
         // given
         Logger mockLogger = mock(Logger.class);
-        DeleteSavingHandlerDelegate sut =
-                new DeleteSavingHandlerDelegate(mockTransformer, mockService, mockLogger);
+        DeleteSavingHandlerDelegate sut = new DeleteSavingHandlerDelegate(mockService, mockLogger);
 
         // when
         sut.handle(mockNameRequest, mockSubject, mockDetails);

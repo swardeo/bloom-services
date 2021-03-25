@@ -1,7 +1,6 @@
 package handler;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,13 +13,13 @@ import model.Subject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
-import service.AddSavingService;
+import service.DynamoService;
 import transform.SavingTransformer;
 
 class AddSavingHandlerTest {
 
     SavingTransformer mockTransformer;
-    AddSavingService mockService;
+    DynamoService mockService;
     Saving mockSaving;
     Map mockAttributeMap;
     Subject mockSubject;
@@ -29,7 +28,7 @@ class AddSavingHandlerTest {
     @BeforeEach
     void beforeEach() {
         mockTransformer = mock(SavingTransformer.class);
-        mockService = mock(AddSavingService.class);
+        mockService = mock(DynamoService.class);
         mockSaving = mock(Saving.class);
         mockAttributeMap = mock(Map.class);
         mockSubject = mock(Subject.class);
@@ -64,7 +63,7 @@ class AddSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockTransformer, times(1)).toAttributeMap(mockSaving, mockSubject);
+        verify(mockTransformer).toAttributeMap(mockSaving, mockSubject);
     }
 
     @Test
@@ -76,7 +75,7 @@ class AddSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockService, times(1)).addSaving(mockAttributeMap);
+        verify(mockService).add(mockAttributeMap);
     }
 
     @Test
@@ -90,7 +89,7 @@ class AddSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockLogger, times(1))
+        verify(mockLogger)
                 .info(
                         "Saving {} added for subject {}",
                         mockSaving.getName().getName(),

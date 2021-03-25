@@ -3,11 +3,9 @@ package transform;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import model.Adjustment;
 import model.Amount;
 import model.Date;
 import model.Name;
-import model.OneTimePayment;
 import model.Rate;
 import model.Saving;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -15,11 +13,22 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 
 public class SavingsDynamoTransformer {
 
-    public SavingsDynamoTransformer() {}
+    private final AdjustmentsTransformer adjustmentsTransformer;
+    private final OneTimePaymentsTransformer oneTimePaymentsTransformer;
+
+    public SavingsDynamoTransformer() {
+        this(new AdjustmentsTransformer(), new OneTimePaymentsTransformer());
+    }
+
+    SavingsDynamoTransformer(
+            AdjustmentsTransformer adjustmentsTransformer,
+            OneTimePaymentsTransformer oneTimePaymentsTransformer) {
+        this.adjustmentsTransformer = adjustmentsTransformer;
+        this.oneTimePaymentsTransformer = oneTimePaymentsTransformer;
+    }
 
     public List<Saving> toSavingsList(QueryResponse response) {
         List<Saving> savingsList = new ArrayList<>();
-
         for (Map<String, AttributeValue> attributeValueMap : response.items()) {
             Saving saving = toSaving(attributeValueMap);
             savingsList.add(saving);
@@ -37,40 +46,12 @@ public class SavingsDynamoTransformer {
         builder.withStartDate(new Date(attributeValueMap.get("StartDate").s()));
         builder.withEndDate(new Date(attributeValueMap.get("EndDate").s()));
         builder.withYearlyRate(new Rate(attributeValueMap.get("YearlyRate").s()));
-
-        List<Adjustment> adjustments = createAdjustmentsList(attributeValueMap.get("Adjustments"));
-        builder.withAdjustments(adjustments);
-
-        List<OneTimePayment> oneTimePayments =
-                createOneTimePaymentsList(attributeValueMap.get("OneTimePayments"));
-        builder.withOneTimePayments(oneTimePayments);
+        builder.withAdjustments(
+                adjustmentsTransformer.toAdjustmentsList(attributeValueMap.get("Adjustments")));
+        builder.withOneTimePayments(
+                oneTimePaymentsTransformer.toOneTimePaymentsList(
+                        attributeValueMap.get("OneTimePayments")));
 
         return builder.build();
-    }
-
-    private static List<Adjustment> createAdjustmentsList(AttributeValue adjustmentsAttribute) {
-        List<Adjustment> adjustments = new ArrayList<>();
-        for (AttributeValue attributeValue : adjustmentsAttribute.l()) {
-            Adjustment adjustment =
-                    new Adjustment(
-                            new Amount(attributeValue.m().get("Amount").s()),
-                            new Date(attributeValue.m().get("DateFrom").s()),
-                            new Rate(attributeValue.m().get("Rate").s()));
-            adjustments.add(adjustment);
-        }
-        return adjustments;
-    }
-
-    private static List<OneTimePayment> createOneTimePaymentsList(
-            AttributeValue oneTimePaymentsAttribute) {
-        List<OneTimePayment> oneTimePayments = new ArrayList<>();
-        for (AttributeValue attributeValue : oneTimePaymentsAttribute.l()) {
-            OneTimePayment oneTimePayment =
-                    new OneTimePayment(
-                            new Amount(attributeValue.m().get("Amount").s()),
-                            new Date(attributeValue.m().get("Date").s()));
-            oneTimePayments.add(oneTimePayment);
-        }
-        return oneTimePayments;
     }
 }
