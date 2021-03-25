@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import exception.BadRequestException;
-import exception.NotFoundException;
 import java.util.stream.Stream;
 import model.HandlerResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +67,6 @@ class ExceptionHandlerTest {
     static Stream<Arguments> exceptionProvider() {
         return Stream.of(
                 arguments(new BadRequestException("exception", new Throwable()), 400),
-                arguments(new NotFoundException("exception", new Throwable()), 404),
                 arguments(new RuntimeException("exception"), 500));
     }
 
