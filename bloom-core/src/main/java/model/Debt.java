@@ -45,8 +45,8 @@ public class Debt {
         checkNull(builder.startDate, "startDate");
         checkNull(builder.yearlyRate, "yearlyRate");
 
-        if (0 > builder.startAmount.getAmount().compareTo(BigDecimal.ZERO)) {
-            throw new IllegalArgumentException("startAmount cannot be negative");
+        if (1 > builder.startAmount.getAmount().compareTo(BigDecimal.ZERO)) {
+            throw new IllegalArgumentException("startAmount must be greater than 0");
         }
         if (null != builder.adjustments && 0 < builder.adjustments.size()) {
             validateAdjustmentDates(
