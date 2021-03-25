@@ -200,11 +200,11 @@ class DebtTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"-0.01", "-5", "-10.25"})
+    @ValueSource(strings = {"-0.01", "0.00", "-5", "-10.25"})
     void throwsExceptionWhenStartAmountInvalid(String amount) {
+        // given
         startAmount = new Amount(amount);
 
-        // given
         Builder builder =
                 Debt.newBuilder()
                         .withName(name)
@@ -220,26 +220,28 @@ class DebtTest {
 
         } catch (IllegalArgumentException actual) {
             // then
-            assertThat(actual).hasMessage("startAmount cannot be negative");
+            assertThat(actual).hasMessage("startAmount must be greater than 0");
         }
     }
 
     @Test
-    void noExceptionWhenStartAmountZero() {
+    void noExceptionWhenLowestStartAmount() {
         // given
+        startAmount = new Amount("0.01");
+
         Builder builder =
                 Debt.newBuilder()
                         .withName(name)
-                        .withStartAmount(new Amount("0.00"))
+                        .withStartAmount(startAmount)
                         .withMonthlyAmount(monthlyAmount)
                         .withStartDate(startDate)
                         .withYearlyRate(yearlyRate);
 
         // when
-        builder.build();
+        Debt actual = builder.build();
 
         // then
-        // no exception
+        assertThat(actual.getStartAmount().getAmount()).isEqualTo(startAmount.getAmount());
     }
 
     @ParameterizedTest
