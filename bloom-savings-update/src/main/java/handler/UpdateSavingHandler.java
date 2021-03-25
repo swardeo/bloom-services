@@ -11,19 +11,17 @@ import model.RequestDetails;
 import model.Saving;
 import model.Subject;
 import org.slf4j.Logger;
+import service.DynamoService;
 import service.UpdateSavingService;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import transform.SavingTransformer;
 
 public class UpdateSavingHandler extends RequestStreamHandler<Saving, Void> {
 
     public static final ObjectMapper OBJECT_MAPPER = provideMapper();
-    public static final DynamoDbClient DYNAMO_DB_CLIENT = provideClient();
-    public static final String TABLE_NAME = provideTableName();
     public static final SavingTransformer SAVING_TRANSFORMER = new SavingTransformer();
     public static final UpdateSavingService UPDATE_SAVING_SERVICE =
-            new UpdateSavingService(DYNAMO_DB_CLIENT, TABLE_NAME);
+            new UpdateSavingService(new DynamoService(provideClient(), provideTableName()));
 
     public UpdateSavingHandler() {
         super(

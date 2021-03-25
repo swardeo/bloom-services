@@ -1,7 +1,6 @@
 package handler;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,11 +39,9 @@ class UpdateSavingHandlerTest {
         Name mockName = mock(Name.class);
         when(mockSaving.getName()).thenReturn(mockName);
         when(mockName.getName()).thenReturn("this is a name");
-
         when(mockSubject.getSubject()).thenReturn("blah");
 
         when(mockTransformer.toKey(mockSaving.getName(), mockSubject)).thenReturn(mockKey);
-
         when(mockTransformer.toAttributeMap(mockSaving)).thenReturn(mockAttributeMap);
     }
 
@@ -69,7 +66,7 @@ class UpdateSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockTransformer, times(1)).toKey(mockSaving.getName(), mockSubject);
+        verify(mockTransformer).toKey(mockSaving.getName(), mockSubject);
     }
 
     @Test
@@ -82,7 +79,7 @@ class UpdateSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockTransformer, times(1)).toAttributeMap(mockSaving);
+        verify(mockTransformer).toAttributeMap(mockSaving);
     }
 
     @Test
@@ -95,7 +92,7 @@ class UpdateSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockService, times(1)).updateSaving(mockKey, mockAttributeMap);
+        verify(mockService).updateSaving(mockKey, mockAttributeMap);
     }
 
     @Test
@@ -109,7 +106,7 @@ class UpdateSavingHandlerTest {
         sut.handle(mockSaving, mockSubject, mockDetails);
 
         // then
-        verify(mockLogger, times(1))
+        verify(mockLogger)
                 .info(
                         "Saving {} updated for subject {}",
                         mockSaving.getName().getName(),

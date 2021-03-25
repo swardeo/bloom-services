@@ -1,9 +1,11 @@
 package transform;
 
-import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static software.amazon.awssdk.services.dynamodb.model.AttributeValue.builder;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,8 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 class SavingTransformerTest {
 
+    AdjustmentsTransformer adjustmentsTransformer;
+    OneTimePaymentsTransformer oneTimePaymentsTransformer;
     SavingTransformer sut;
 
     Subject mockSubject;
@@ -34,6 +38,8 @@ class SavingTransformerTest {
 
     @BeforeEach
     void beforeEach() {
+        adjustmentsTransformer = mock(AdjustmentsTransformer.class);
+        oneTimePaymentsTransformer = mock(OneTimePaymentsTransformer.class);
         mockSubject = mock(Subject.class);
 
         savingName = new Name("MySaving");
@@ -54,12 +60,16 @@ class SavingTransformerTest {
 
         when(mockSubject.getSubject()).thenReturn("74sr7f7-j234fd-4385ds");
 
-        sut = new SavingTransformer();
+        sut = new SavingTransformer(adjustmentsTransformer, oneTimePaymentsTransformer);
     }
 
     @Test
     void mapContainsRequiredSavingAttributesWhenInvoked() {
         // given
+        when(adjustmentsTransformer.toAdjustmentsAttribute(any()))
+                .thenReturn(builder().l(List.of()).build());
+        when(oneTimePaymentsTransformer.toOneTimePaymentsAttribute(any()))
+                .thenReturn(builder().l(List.of()).build());
         Saving saving = savingBuilder.build();
 
         // when
@@ -78,77 +88,44 @@ class SavingTransformerTest {
     }
 
     @Test
-    void mapOptionallyContainsAdjustmentsAttributeWhenInvoked() {
+    void delegatesAdjustmentMappingToTransformer() {
         // given
-        Adjustment adjustment1 =
+        Adjustment adjustment =
                 new Adjustment(new Amount("12.66"), new Date("2015-11"), new Rate("1.25"));
-        Adjustment adjustment2 =
-                new Adjustment(new Amount("14.26"), new Date("2018-09"), new Rate("1.75"));
+        List<Adjustment> adjustments = List.of(adjustment);
 
-        Saving saving = savingBuilder.withAdjustments(asList(adjustment1, adjustment2)).build();
+        AttributeValue expected = builder().build();
+        when(adjustmentsTransformer.toAdjustmentsAttribute(adjustments))
+                .thenReturn(builder().l(expected).build());
 
-        Map<String, AttributeValue> expected1 =
-                Map.of(
-                        "Amount",
-                        AttributeValue.builder().s(adjustment1.getAmount().toString()).build(),
-                        "DateFrom",
-                        AttributeValue.builder().s(adjustment1.getDateFrom().toString()).build(),
-                        "Rate",
-                        AttributeValue.builder().s(adjustment1.getRate().toString()).build());
-        Map<String, AttributeValue> expected2 =
-                Map.of(
-                        "Amount",
-                        AttributeValue.builder().s(adjustment2.getAmount().toString()).build(),
-                        "DateFrom",
-                        AttributeValue.builder().s(adjustment2.getDateFrom().toString()).build(),
-                        "Rate",
-                        AttributeValue.builder().s(adjustment2.getRate().toString()).build());
+        Saving saving = savingBuilder.withAdjustments(adjustments).build();
+
         // when
         Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockSubject);
 
         // then
-        List<AttributeValue> adjustments = actual.get("Adjustments").l();
-
-        assertThat(adjustments).hasSize(2);
-        assertThat(adjustments)
-                .containsOnly(
-                        AttributeValue.builder().m(expected1).build(),
-                        AttributeValue.builder().m(expected2).build());
+        verify(adjustmentsTransformer).toAdjustmentsAttribute(adjustments);
+        assertThat(actual.get("Adjustments").l()).containsOnly(expected);
     }
 
     @Test
-    void mapOptionallyContainsOneTimePaymentAttributeWhenInvoked() {
+    void delegatesOneTimePaymentMappingToTransformer() {
         // given
-        OneTimePayment oneTimePayment1 =
+        OneTimePayment oneTimePayment =
                 new OneTimePayment(new Amount("12.66"), new Date("2015-11"));
-        OneTimePayment oneTimePayment2 =
-                new OneTimePayment(new Amount("14.26"), new Date("2018-09"));
+        List<OneTimePayment> oneTimePayments = List.of(oneTimePayment);
 
-        Saving saving =
-                savingBuilder.withOneTimePayments(asList(oneTimePayment1, oneTimePayment2)).build();
+        AttributeValue expected = builder().build();
+        when(oneTimePaymentsTransformer.toOneTimePaymentsAttribute(oneTimePayments))
+                .thenReturn(builder().l(expected).build());
 
-        Map<String, AttributeValue> expected1 =
-                Map.of(
-                        "Amount",
-                        AttributeValue.builder().s(oneTimePayment1.getAmount().toString()).build(),
-                        "Date",
-                        AttributeValue.builder().s(oneTimePayment1.getDate().toString()).build());
-        Map<String, AttributeValue> expected2 =
-                Map.of(
-                        "Amount",
-                        AttributeValue.builder().s(oneTimePayment2.getAmount().toString()).build(),
-                        "Date",
-                        AttributeValue.builder().s(oneTimePayment2.getDate().toString()).build());
+        Saving saving = savingBuilder.withOneTimePayments(oneTimePayments).build();
+
         // when
         Map<String, AttributeValue> actual = sut.toAttributeMap(saving, mockSubject);
 
         // then
-        List<AttributeValue> oneTimePayments = actual.get("OneTimePayments").l();
-
-        assertThat(oneTimePayments).hasSize(2);
-        assertThat(oneTimePayments)
-                .containsOnly(
-                        AttributeValue.builder().m(expected1).build(),
-                        AttributeValue.builder().m(expected2).build());
+        verify(oneTimePaymentsTransformer).toOneTimePaymentsAttribute(oneTimePayments);
+        assertThat(actual.get("OneTimePayments").l()).containsOnly(expected);
     }
 }

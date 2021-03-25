@@ -1,50 +1,31 @@
 package service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 
 class UpdateSavingServiceTest {
 
     UpdateSavingService sut;
+    DynamoService mockDynamoService;
 
-    DynamoDbClient mockClient;
-    String tableName;
     Map<String, AttributeValue> mockKey;
     Map<String, AttributeValue> mockAttributeValueMap;
 
     @BeforeEach
     void beforeEach() {
-        mockClient = mock(DynamoDbClient.class);
-        tableName = "MY_TABLE_NAME";
+        mockDynamoService = mock(DynamoService.class);
+        sut = new UpdateSavingService(mockDynamoService);
+
         mockKey = mock(Map.class);
         mockAttributeValueMap = mock(Map.class);
-
-        sut = new UpdateSavingService(mockClient, tableName);
-    }
-
-    @Test
-    void requestHasCorrectTableNameWhenInvoked() {
-        // given
-
-        // when
-        sut.updateSaving(mockKey, mockAttributeValueMap);
-
-        // then
-        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
-        UpdateItemRequest actual = captor.getValue();
-
-        assertThat(actual.tableName()).isEqualTo(tableName);
     }
 
     @Test
@@ -55,11 +36,11 @@ class UpdateSavingServiceTest {
         sut.updateSaving(mockKey, mockAttributeValueMap);
 
         // then
-        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
-        UpdateItemRequest actual = captor.getValue();
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(mockDynamoService).update(captor.capture(), any(), any(), any());
+        Map<String, AttributeValue> actual = captor.getValue();
 
-        assertThat(actual.key()).isEqualTo(mockKey);
+        assertThat(actual).isEqualTo(mockKey);
     }
 
     @Test
@@ -72,11 +53,11 @@ class UpdateSavingServiceTest {
         sut.updateSaving(mockKey, mockAttributeValueMap);
 
         // then
-        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
-        UpdateItemRequest actual = captor.getValue();
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(mockDynamoService).update(any(), captor.capture(), any(), any());
+        String actual = captor.getValue();
 
-        assertThat(actual.updateExpression()).isEqualTo(updateExpression);
+        assertThat(actual).isEqualTo(updateExpression);
     }
 
     @Test
@@ -96,11 +77,11 @@ class UpdateSavingServiceTest {
         sut.updateSaving(mockKey, mockAttributeValueMap);
 
         // then
-        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
-        UpdateItemRequest actual = captor.getValue();
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(mockDynamoService).update(any(), any(), captor.capture(), any());
+        Map<String, String> actual = captor.getValue();
 
-        assertThat(actual.expressionAttributeNames()).isEqualTo(expressionAttributeNames);
+        assertThat(actual).isEqualTo(expressionAttributeNames);
     }
 
     @Test
@@ -111,10 +92,10 @@ class UpdateSavingServiceTest {
         sut.updateSaving(mockKey, mockAttributeValueMap);
 
         // then
-        ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
-        verify(mockClient, times(1)).updateItem(captor.capture());
-        UpdateItemRequest actual = captor.getValue();
+        ArgumentCaptor<Map> captor = ArgumentCaptor.forClass(Map.class);
+        verify(mockDynamoService).update(any(), any(), any(), captor.capture());
+        Map<String, AttributeValue> actual = captor.getValue();
 
-        assertThat(actual.expressionAttributeValues()).isEqualTo(mockAttributeValueMap);
+        assertThat(actual).isEqualTo(mockAttributeValueMap);
     }
 }
