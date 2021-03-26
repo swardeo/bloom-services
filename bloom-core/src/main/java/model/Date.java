@@ -30,8 +30,8 @@ public class Date {
     }
 
     private static void checkDateValidity(int year, int month) {
-        if (!(1939 < year && 2051 > year)) {
-            throw new IllegalArgumentException("year should be in range [1940, 2050]");
+        if (!(1969 < year && 2051 > year)) {
+            throw new IllegalArgumentException("year should be in range [1970, 2050]");
         } else if (!(0 < month && 13 > month)) {
             throw new IllegalArgumentException("month should be in range [1, 12]");
         }
