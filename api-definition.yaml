@@ -1,0 +1,376 @@
+openapi: 3.0.3
+
+info:
+  title: Bloom API Definition
+  contact:
+    email: wards4@aston.ac.uk
+  version: 1.0.0
+
+externalDocs:
+  description: Visit Bloom
+  url: http://bloom.money
+
+servers:
+  - url: https://api.bloom.money
+    description: Production server
+  - url: https://dev-api.bloom.money
+    description: Development server
+
+tags:
+  - name: misc
+    description: Miscellaneous operations
+  - name: savings
+    description: Operations to interact with savings
+  - name: debts
+    description: Operations to interact with debts
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Check the health of Bloom's backend
+      tags:
+        - misc
+      responses:
+        200:
+          description: Health status returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+        500:
+          description: Server error
+  /savings:
+    post:
+      summary: Add a new saving
+      description: New saving to be associated with the user
+      tags:
+        - savings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Saving'
+        required: true
+      responses:
+        200:
+          description: Created new saving
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+    get:
+      summary: List all savings
+      description: List all savings associated with a user
+      tags:
+        - savings
+      responses:
+        200:
+          description: List of all savings associated with user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Saving'
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+  /savings/{name}:
+    put:
+      summary: Update an existing saving
+      description: Updates a saving already associated with the user
+      tags:
+        - savings
+      parameters:
+        - name: name
+          in: path
+          description: Name of saving to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Saving'
+        required: true
+      responses:
+        200:
+          description: Updated saving
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+    delete:
+      summary: Delete a saving
+      description: Delete a specified saving associated with the user
+      tags:
+        - savings
+      parameters:
+        - name: name
+          in: path
+          description: Name of saving to delete
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NameRequest'
+      responses:
+        200:
+          description: Deleted saving
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+  /debts:
+    post:
+      summary: Add a new debt
+      description: New debt associated with the user
+      tags:
+        - debts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Debt'
+        required: true
+      responses:
+        200:
+          description: Created new debt
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+    get:
+      summary: List all debts
+      description: Returns all debts associated with a user
+      tags:
+        - debts
+      responses:
+        200:
+          description: List of all debts with user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Debt'
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+  /debts/{name}:
+    put:
+      summary: Update an existing debt
+      description: Updates a debt which already exists
+      tags:
+        - debts
+      parameters:
+        - name: name
+          in: path
+          description: Name of debt to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Debt'
+        required: true
+      responses:
+        200:
+          description: Updated debt
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+    delete:
+      summary: Delete a debt
+      description: Delete a specified debt associated with the user
+      tags:
+        - debts
+      parameters:
+        - name: name
+          in: path
+          description: Name of debt to delete
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NameRequest'
+      responses:
+        200:
+          description: Deleted debt
+        401:
+          description: Unauthorized
+        404:
+          description: Not found
+        500:
+          description: Server error
+      security:
+        - BloomAuthorization: []
+
+components:
+  schemas:
+    HealthResponse:
+      required:
+        - health
+      properties:
+        health:
+          type: string
+          enum:
+            - healthy
+            - unhealthy
+    Saving:
+      required:
+        - name
+        - startAmount
+        - monthlyAmount
+        - startDate
+        - endDate
+        - yearlyRate
+      type: object
+      properties:
+        name:
+          type: string
+        startAmount:
+          type: string
+          format: decimal >= 0
+          example: '0.00'
+        monthlyAmount:
+          type: string
+          format: decimal
+          example: '50.00'
+        startDate:
+          type: string
+          format: fullyear-month
+          example: '2010-01'
+        endDate:
+          type: string
+          format: fullyear-month
+          example: '2020-12'
+        yearlyRate:
+          type: string
+          format: percentage
+          example: '1.50'
+        adjustments:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Adjustment'
+        oneTimePayments:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/OneTimePayment'
+    Debt:
+      required:
+        - name
+        - startAmount
+        - monthlyAmount
+        - startDate
+        - yearlyRate
+        - untilComplete
+      type: object
+      properties:
+        name:
+          type: string
+        startAmount:
+          type: string
+          format: decimal > 0
+          example: '250.00'
+        monthlyAmount:
+          type: string
+          format: decimal
+          example: '50.00'
+        startDate:
+          type: string
+          format: fullyear-month
+          example: '2010-01'
+        yearlyRate:
+          type: string
+          format: percentage
+          example: '1.50'
+        adjustments:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/Adjustment'
+        oneTimePayments:
+          type: array
+          minItems: 0
+          items:
+            $ref: '#/components/schemas/OneTimePayment'
+    Adjustment:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          example: '50.00'
+        dateFrom:
+          type: string
+          format: fullyear-month
+          example: '2012-01'
+        rate:
+          type: string
+          format: percentage
+          example: '1.50'
+    OneTimePayment:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          example: '100.00'
+        date:
+          type: string
+          format: fullyear-month
+          example: '2012-01'
+    NameRequest:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+  securitySchemes:
+    BloomAuthorization:
+      type: apiKey
+      in: header
+      name: Authorization
+      x-amazon-apigateway-authtype: cognito_user_pools
+      x-amazon-apigateway-authorizer:
+        type: cognito_user_pools
