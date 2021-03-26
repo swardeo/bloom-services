@@ -69,7 +69,7 @@ class DateTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1915-06", "1939-06", "2051-06", "2075-06"})
+    @ValueSource(strings = {"1935-06", "1969-06", "2051-06", "2075-06"})
     void throwsExceptionWhenInappropriateYear(String date) {
         // given
 
@@ -80,7 +80,7 @@ class DateTest {
 
             // then
         } catch (IllegalArgumentException actual) {
-            assertThat(actual).hasMessage("year should be in range [1940, 2050]");
+            assertThat(actual).hasMessage("year should be in range [1970, 2050]");
         }
     }
 
@@ -101,7 +101,7 @@ class DateTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"1940-06", "2050-06", "2000-01", "2000-12"})
+    @ValueSource(strings = {"1970-01", "2050-06", "2000-01", "2000-12", "2050-12"})
     void noExceptionWhenValidDatesProvided(String date) {
         // given
 
