@@ -245,7 +245,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaSavingsAddRole.Arn
       Runtime: java11
       Timeout: 15
@@ -293,7 +293,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaSavingsDeleteRole.Arn
       Runtime: java11
       Timeout: 15
@@ -341,7 +341,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaSavingsListRole.Arn
       Runtime: java11
       Timeout: 15
@@ -389,7 +389,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaSavingsUpdateRole.Arn
       Runtime: java11
       Timeout: 15
@@ -437,7 +437,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaDebtsAddRole.Arn
       Runtime: java11
       Timeout: 15
@@ -485,7 +485,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaDebtsDeleteRole.Arn
       Runtime: java11
       Timeout: 15
@@ -533,7 +533,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaDebtsListRole.Arn
       Runtime: java11
       Timeout: 15
@@ -581,7 +581,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE_NAME: !Sub '${Environment}-bloom-db'
-      MemorySize: 512
+      MemorySize: 1024
       Role: !GetAtt LambdaDebtsUpdateRole.Arn
       Runtime: java11
       Timeout: 15
