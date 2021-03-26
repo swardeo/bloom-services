@@ -83,6 +83,7 @@ public class RequestStreamHandler<TRequest, TResponse>
         } catch (RuntimeException exception) {
             response = exceptionHandler.handleException(exception);
         }
+        logger.info("request completed with status {}", response.getStatusCode());
         output.write(mapper.writeValueAsBytes(response));
     }
 }
