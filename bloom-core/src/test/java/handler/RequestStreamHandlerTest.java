@@ -221,6 +221,9 @@ class RequestStreamHandlerTest {
         RuntimeException expected = new RuntimeException(message);
         when(mapper.readValue(input, HandlerRequest.class)).thenThrow(expected);
 
+        when(exceptionHandler.handleException(expected))
+                .thenReturn(HandlerResponse.newBuilder().withStatusCode(500).build());
+
         // when
         sut.handleRequest(input, output, context);
 
@@ -238,6 +241,9 @@ class RequestStreamHandlerTest {
         JsonProcessingException exception = mock(JsonProcessingException.class);
         when(mapper.readValue(handlerRequest.getBody(), String.class)).thenThrow(exception);
 
+        when(exceptionHandler.handleException(any()))
+                .thenReturn(HandlerResponse.newBuilder().withStatusCode(400).build());
+
         // when
         sut.handleRequest(input, output, context);
 
@@ -249,6 +255,21 @@ class RequestStreamHandlerTest {
 
         assertThat(actual.getCause()).isEqualTo(exception);
         assertThat(actual.getMessage()).isEqualTo("request body contained illegal values");
+    }
+
+    @Test
+    void logsStatusCodeWhenRequestCompleted() throws IOException {
+        // given
+
+        // when
+        sut.handleRequest(input, output, context);
+
+        // then
+        ArgumentCaptor<HandlerResponse> captor = ArgumentCaptor.forClass(HandlerResponse.class);
+        verify(mapper).writeValueAsBytes(captor.capture());
+        HandlerResponse actual = captor.getValue();
+
+        verify(logger).info("request completed with status {}", actual.getStatusCode());
     }
 
     static class TestDelegate implements Handler<String, String> {
