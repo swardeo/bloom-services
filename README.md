@@ -6,9 +6,13 @@
 
 ## What is Bloom?
 
-Bloom is my final year project at Aston University, which aims to help individuals explore a forecast of their financial situation. [Take a look here!](https://bloom.money/)
+Bloom was my final year project at Aston University, which aimed to help individuals explore a forecast of their financial situation.
 
 This project contains the backend of the application. The frontend can be viewed [here](https://github.com/swardeo/bloom-ui).
+
+### Bloom is now offline :(
+
+**PLEASE NOTE: the bloom.money domain is no longer associated with myself or this project.**
 
 ## API Definition
 
@@ -27,13 +31,13 @@ In the project directory, you can run:
 
 A pipeline will deploy the application to the development environment automatically when a pull request is raised against the master branch.
 
-The development API can be reached at [https://dev-api.bloom.money](https://dev-api.bloom.money).
+The development API can be reached at ~~removed~~.
 
 ### Production
 
 Another pipeline will deploy the application to the production environment automatically when a pull request has been merged to the master branch.
 
-The production API can be reached at [https://api.bloom.money](https://api.bloom.money).
+The production API can be reached at ~~removed~~.
 
 ### Deployment Validation
 
